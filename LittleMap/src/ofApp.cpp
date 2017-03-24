@@ -63,6 +63,30 @@ ofColor terrain(float x, float y)
 		return ofColor(150, 200, 255);
 }
 
+const float gridNoiseScale = 0.05f;
+
+float latLonNoise(float x, float y)
+{
+	return noise(x*gridNoiseScale, y*gridNoiseScale, 3, 0.5f, 0.4f);
+}
+
+const float gridSpacing = 100.0f;
+const float gridWobble = 15.0f;
+
+ofColor latLon(float x, float y)
+{
+	float vals[4];
+	vals[0] = x + latLonNoise(x, y) * gridWobble;
+	vals[1] = x + 1 + latLonNoise(x + 1, y) * gridWobble;
+	vals[2] = y + latLonNoise(x, y) * gridWobble;
+	vals[3] = y + 1 + latLonNoise(x, y + 1) * gridWobble;
+
+	if (std::fmod(vals[0], gridSpacing) > std::fmod(vals[1], gridSpacing) || std::fmod(vals[2], gridSpacing) > std::fmod(vals[3], gridSpacing))
+		return ofColor(0, 0, 0, 255);
+	else
+		return ofColor(0, 0, 0, 0);
+}
+
 void statusMessage(char* message)
 {
 	printf("%s\n", message);
@@ -96,7 +120,6 @@ void ofApp::draw()
 
 		case(step::islands):
 		{
-			statusMessage("Islands");
 			islands = ofImage();
 			islands.allocate(ofGetWidth(), ofGetHeight(), ofImageType::OF_IMAGE_COLOR_ALPHA);
 
@@ -111,12 +134,32 @@ void ofApp::draw()
 
 			islands.update();
 			islands.draw(0, 0);
+			statusMessage("Islands");
 			break;
 		}
 
 		case(step::lines):
 		{
+			lines = ofImage();
+			lines.allocate(ofGetWidth(), ofGetHeight(), ofImageType::OF_IMAGE_COLOR_ALPHA);
+
+			for (int y = 0; y < ofGetHeight(); y++)
+			{
+				for (int x = 0; x < ofGetWidth(); x++)
+				{
+					ofColor color = latLon(x, y);
+					lines.setColor(x, y, color);
+				}
+			}
+
+			lines.update();
+
+			printf("%f\n", THRESHOLD_X);
+
+			islands.draw(0, 0);
+			lines.draw(0, 0);
 			statusMessage("Lines");
+
 			break;
 		}
 
@@ -135,6 +178,7 @@ void ofApp::draw()
 		case(step::done):
 		{
 			islands.draw(0, 0);
+			lines.draw(0, 0);
 			statusMessage("Done");
 			break;
 		}
