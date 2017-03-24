@@ -31,6 +31,7 @@
 # Visual Studio junk
 .vs
 *.VC.db
+*.VC.opendb
 
 # THIS PROJECT
 LittleMap/obj/
