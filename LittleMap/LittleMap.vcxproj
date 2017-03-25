@@ -175,6 +175,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\CurveTerrain.cpp" />
     <ClCompile Include="src\LatLon.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Noise.cpp" />
@@ -184,6 +185,7 @@
     <ClCompile Include="src\Terrain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\CurveTerrain.h" />
     <ClInclude Include="src\LatLon.h" />
     <ClInclude Include="src\Noise.h" />
     <ClInclude Include="src\ofApp.h" />
