@@ -1,10 +1,193 @@
 #include "ofApp.h"
 
+
+struct tile {
+	int points[9];
+	int operator[](int idx)
+	{
+		return points[idx];
+	}
+};
+
+tile tiles[16];
+
+void SetupTiles1px()
+{
+	// 0 0
+	// 0 0
+	tiles[0] = { {0, 0, 0,
+				  0, 0, 0,
+				  0, 0, 0} };
+	// 1 0
+	// 0 0
+	tiles[1] = { {1, 2, 0,
+				  2, 0, 0,
+				  0, 0, 0} };
+	// 0 1
+	// 0 0
+	tiles[2] = { {0, 2, 1,
+				  0, 0, 2,
+				  0, 0, 0} };
+	// 1 1
+	// 0 0
+	tiles[3] = { {1, 1, 1,
+				  2, 2, 2,
+				  0, 0, 0} };
+	// 0 0
+	// 1 0
+	tiles[4] = { {0, 0, 0,
+				  2, 0, 0,
+				  1, 2, 0} };
+	// 1 0
+	// 1 0
+	tiles[5] = { {1, 2, 0,
+				  1, 2, 0,
+				  1, 2, 0} };
+	// 0 1
+	// 1 0
+	tiles[6] = { {0, 2, 1,
+				  2, 0, 2,
+				  1, 2, 0} };
+	// 1 1
+	// 1 0
+	tiles[7] = { {1, 1, 1,
+				  1, 1, 2,
+				  1, 2, 0} };
+	// 0 0
+	// 0 1
+	tiles[8] = { {0, 0, 0,
+				  0, 0, 2,
+				  0, 2, 1} };
+	// 1 0
+	// 0 1
+	tiles[9] = { {1, 2, 0,
+				  2, 0, 2,
+				  0, 2, 1} };
+	// 0 1
+	// 0 1
+	tiles[10]= { {0, 2, 1,
+				  0, 2, 1,
+				  0, 2, 1} };
+	// 1 1
+	// 0 1
+	tiles[11]= { {1, 1, 1,
+				  2, 1, 1,
+				  0, 2, 1} };
+	// 0 0
+	// 1 1
+	tiles[12]= { {0, 0, 0,
+				  2, 2, 2,
+				  1, 1, 1} };
+	// 1 0
+	// 1 1
+	tiles[13]= { {1, 2, 0,
+				  1, 1, 2,
+				  1, 1, 1} };
+	// 0 1
+	// 1 1
+	tiles[14]= { {0, 2, 1,
+				  2, 1, 1,
+				  1, 1, 1} };
+	// 1 1
+	// 1 1
+	tiles[15]= { {1, 1, 1,
+				  1, 1, 1,
+				  1, 1, 1} };
+}
+
+void SetupTiles2px()
+{
+	// 0 0
+	// 0 0
+	tiles[0] = { {0, 0, 0,
+				  0, 0, 0,
+				  0, 0, 0} };
+	// 1 0
+	// 0 0
+	tiles[1] = { {2, 2, 0,
+				  2, 0, 0,
+				  0, 0, 0} };
+	// 0 1
+	// 0 0
+	tiles[2] = { {0, 2, 2,
+				  0, 0, 2,
+				  0, 0, 0} };
+	// 1 1
+	// 0 0
+	tiles[3] = { {2, 2, 2,
+				  2, 2, 2,
+				  0, 0, 0} };
+	// 0 0
+	// 1 0
+	tiles[4] = { {0, 0, 0,
+				  2, 0, 0,
+				  2, 2, 0} };
+	// 1 0
+	// 1 0
+	tiles[5] = { {2, 2, 0,
+				  2, 2, 0,
+				  2, 2, 0} };
+	// 0 1
+	// 1 0
+	tiles[6] = { {0, 2, 2,
+				  2, 2, 2,
+				  2, 2, 0} };
+	// 1 1
+	// 1 0
+	tiles[7] = { {1, 2, 2,
+				  2, 2, 2,
+				  2, 2, 0} };
+	// 0 0
+	// 0 1
+	tiles[8] = { {0, 0, 0,
+				  0, 0, 2,
+				  0, 2, 2} };
+	// 1 0
+	// 0 1
+	tiles[9] = { {2, 2, 0,
+				  2, 2, 2,
+				  0, 2, 2} };
+	// 0 1
+	// 0 1
+	tiles[10]= { {0, 2, 2,
+				  0, 2, 2,
+				  0, 2, 2} };
+	// 1 1
+	// 0 1
+	tiles[11]= { {2, 2, 1,
+				  2, 2, 2,
+				  0, 2, 2} };
+	// 0 0
+	// 1 1
+	tiles[12]= { {0, 0, 0,
+				  2, 2, 2,
+				  2, 2, 2} };
+	// 1 0
+	// 1 1
+	tiles[13]= { {2, 2, 0,
+				  2, 2, 2,
+				  1, 2, 2} };
+	// 0 1
+	// 1 1
+	tiles[14]= { {0, 2, 2,
+				  2, 2, 2,
+				  2, 2, 1} };
+	// 1 1
+	// 1 1
+	tiles[15]= { {1, 1, 1,
+				  1, 1, 1,
+				  1, 1, 1} };
+}
+
+
 //--------------------------------------------------------------
 void ofApp::setup(){
 	ofSetWindowTitle("Tiny Map");
 
 	ofBackground(0, 0, 0);
+
+	//SetupTiles1px();
+	SetupTiles2px();
 }
 
 //--------------------------------------------------------------
@@ -63,6 +246,18 @@ ofColor terrain(float x, float y)
 		return ofColor(150, 200, 255);
 }
 
+tile TileForPos(int x, int y)
+{
+	bool hits[4];
+	hits[0] = onLand(x, y);
+	hits[1] = onLand(x + 3, y);
+	hits[2] = onLand(x, y + 3);
+	hits[3] = onLand(x + 3, y + 3);
+
+	int index = hits[3] << 3 | hits[2] << 2 | hits[1] << 1 | hits[0];
+	return tiles[index];
+}
+
 const float gridNoiseScale = 0.05f;
 
 float latLonNoise(float x, float y)
@@ -90,6 +285,9 @@ ofColor latLon(float x, float y)
 void statusMessage(char* message)
 {
 	printf("%s\n", message);
+	ofSetColor(ofColor::black);
+	ofDrawBitmapString(message, 11, ofGetHeight() - 9);
+	ofSetColor(ofColor::white);
 	ofDrawBitmapString(message, 10, ofGetHeight() - 10);
 }
 
@@ -123,12 +321,26 @@ void ofApp::draw()
 			islands = ofImage();
 			islands.allocate(ofGetWidth(), ofGetHeight(), ofImageType::OF_IMAGE_COLOR_ALPHA);
 
-			for (int y = 0; y < ofGetHeight(); y++)
+			for (int y = 0; y < ofGetHeight(); y+=3)
 			{
-				for (int x = 0; x < ofGetWidth(); x++)
+				for (int x = 0; x < ofGetWidth(); x+=3)
 				{
-					ofColor color = terrain(x, y);
-					islands.setColor(x, y, color);
+					tile t = TileForPos(x, y);
+					for (int n = 0; n < 3 * 3; n++)
+					{
+						int tx = x + (n % 3);
+						int ty = y + (n / 3);
+						if (tx >= ofGetWidth() || ty >= ofGetHeight())
+							continue;
+
+						int i = t[n];
+						if (i == 2)
+							islands.setColor(tx, ty, ofColor(0, 0, 0, 255));
+						else if (i == 1)
+							islands.setColor(tx, ty, ofColor(150, 200, 255, 255));
+						else
+							islands.setColor(tx, ty, ofColor(150, 255, 200, 255));
+					}
 				}
 			}
 
