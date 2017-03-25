@@ -301,6 +301,8 @@ enum step {
 	paper,
 	legend,
 
+	save,
+
 	done,
 };
 
@@ -381,9 +383,26 @@ void ofApp::draw()
 			break;
 		}
 
-		case(step::legend):
+		case(step::legend) :
 		{
 			statusMessage("Legend");
+			break;
+		}
+		case(step::save) :
+		{
+			islands.draw(0, 0);
+			lines.draw(0, 0);
+
+			ofImage snapshot;
+			snapshot.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
+
+			time_t currentTime = time(0);
+			tm tmStruct = *localtime(&currentTime);
+			char filename[MAX_PATH];
+			strftime(filename, sizeof(filename), "little_map-%Y%m%d-%H%M%S.png", &tmStruct);
+			snapshot.save(filename);
+
+			statusMessage("Save");
 			break;
 		}
 
