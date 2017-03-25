@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include "Stage.h"
 
 class ofApp : public ofBaseApp{
 
@@ -23,8 +24,21 @@ class ofApp : public ofBaseApp{
 		
 
 private:
-	ofImage islands;
-	ofImage lines;
-	ofImage paper;
-	ofImage legend;
+	enum step {
+		start,
+		islands,
+		lines,
+		landmarks,
+		paths,
+		paper,
+		legend,
+
+		save,
+
+		done,
+	};
+
+	step currentStep;
+
+	Stage** stages;
 };

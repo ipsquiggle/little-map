@@ -7,6 +7,21 @@
     <ClCompile Include="src\main.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Stage.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Terrain.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LatLon.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Saver.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Noise.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -18,6 +33,21 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ofApp.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Stage.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Terrain.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Noise.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LatLon.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Saver.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
