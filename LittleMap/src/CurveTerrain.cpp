@@ -1,8 +1,8 @@
 #include "CurveTerrain.h"
 #include "Noise.h"
 
-const float noiseScale = 0.05f;
 const int cellSize = 20;
+const float noiseScale = 0.05f * cellSize;
 
 
 CurveTerrain::CurveTerrain()
@@ -16,10 +16,23 @@ CurveTerrain::~CurveTerrain()
 void CurveTerrain::Setup()
 {
 	SetupTiles();
+
+	cellWidth = ofGetWidth() / cellSize;
+	cellHeight = ofGetHeight() / cellSize;
+	cells = new Cell[cellWidth * cellHeight];
+
+	render_x = 0;
+	render_y = 0;
 }
 
 bool CurveTerrain::OnLand(int x, int y)
 {
+	// note this test is for cellWidth, not cellWidth-1, because we test both the left
+	// and right edge of a cell, i.e. the final cell we test's right edge is actually
+	// at cellWidth, even though the cell's index is cellWidth-1
+	if (x == 0 || y == 0 || x == cellWidth || y == cellHeight)
+		return false;
+
 	return Noise(x*noiseScale, y*noiseScale, 4, 0.5f, 0.4f) < 0.45f;
 }
 
@@ -27,9 +40,9 @@ ofColor CurveTerrain::TerrainColour(int x, int y)
 {
 	bool hits[4];
 	hits[0] = OnLand(x, y);
-	hits[1] = OnLand(x + cellSize, y);
-	hits[2] = OnLand(x, y + cellSize);
-	hits[3] = OnLand(x + cellSize, y + cellSize);
+	hits[1] = OnLand(x + 1, y);
+	hits[2] = OnLand(x, y + 1);
+	hits[3] = OnLand(x + 1, y + 1);
 
 	bool land = false;
 	bool water = false;
@@ -51,11 +64,22 @@ ofColor CurveTerrain::TerrainColour(int x, int y)
 
 CurveTerrain::Tile CurveTerrain::TileForPos(int x, int y)
 {
-	bool hits[4];
-	hits[0] = OnLand(x, y);
-	hits[1] = OnLand(x + cellSize, y);
-	hits[2] = OnLand(x, y + cellSize);
-	hits[3] = OnLand(x + cellSize, y + cellSize);
+	int hits[4];
+	hits[0] = (int)OnLand(x, y);
+	hits[1] = (int)OnLand(x + 1, y);
+	hits[2] = (int)OnLand(x, y + 1);
+	hits[3] = (int)OnLand(x + 1, y + 1);
+
+	for (int i = 0; i < 4; i++)
+	{
+		int ix = x * cellSize + (cellSize/8) + (i % 2) * cellSize * 6 / 8;
+		int iy = y * cellSize + (cellSize/8) + (i / 2) * cellSize * 6 / 8;
+		if (hits[i])
+			ofSetColor(0, 150, 0, 255);
+		else
+			ofSetColor(200, 0, 0, 255);
+		ofDrawCircle(ix, iy, 2);
+	}
 
 	int index = hits[3] << 3 | hits[2] << 2 | hits[1] << 1 | hits[0];
 	return tiles[index];
@@ -76,16 +100,66 @@ ofPoint CurveTerrain::PointForDir(dir d)
 	}
 }
 
+CurveTerrain::dir CurveTerrain::PairDir(CurveTerrain::dir d)
+{
+	switch (d)
+	{
+	case top: return bottom;
+	case bottom: return top;
+	case left: return right;
+	case right: return left;
+	}
+}
+
+ofPoint CurveTerrain::DirOffset(CurveTerrain::dir d)
+{
+	switch (d)
+	{
+	case top: return ofPoint(0, -1);
+	case bottom: return ofPoint(0, 1);
+	case left: return ofPoint(-1, 0);
+	case right: return ofPoint(1, 0);
+	}
+}
+
 void CurveTerrain::DrawLink(int x, int y, dir start, dir end)
 {
-	ofPoint corner(x, y);
+	ofPoint corner(x*cellSize, y*cellSize);
 	ofPoint ps = corner + PointForDir(start) * cellSize;
 	ofPoint pe = corner + PointForDir(end) * cellSize;
-	ofSetColor(0, 0, 0, 255);
 	ofDrawLine(ps, pe);
 }
 
-void CurveTerrain::Render()
+void CurveTerrain::DrawIsland(int x, int y)
+{
+	// the first cell in the link is kinda weird.
+	Cell *first = &cells[y*cellWidth + x];
+	Cell *next = first;
+	// pick the first link we can find in the cell.
+	dir d = none;
+	for (int i = 0; i < 4; i++)
+	{
+		if (first->tile.links[i] != none)
+		{
+			d = (dir)i;
+		}
+	}
+	
+	if (d == none)
+		return;
+
+	do {
+		next->visited = true;
+		DrawLink(x, y, d, next->tile.links[d]);
+		ofPoint offset = DirOffset(next->tile.links[d]);
+		x = x + offset.x;
+		y = y + offset.y;
+		d = PairDir(next->tile.links[d]);
+		next = &cells[y*cellWidth + x];
+	} while (next != first);
+}
+
+void CurveTerrain::RenderBegin()
 {
 	image = ofFbo();
 	image.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
@@ -93,12 +167,14 @@ void CurveTerrain::Render()
 	image.begin();
 	ofClear(255, 255, 255, 255);
 
-	for (int y = 0; y < ofGetHeight(); y += cellSize)
+	ofSetColor(0, 0, 255, 255);
+	ofSetLineWidth(1);
+	for (int y = 0; y < cellHeight; y++)
 	{
-		for (int x = 0; x < ofGetWidth(); x += cellSize)
+		for (int x = 0; x < cellWidth; x++)
 		{
 			Tile t = TileForPos(x, y);
-			ofPoint start, end;
+			cells[y*cellWidth + x] = { t, false };
 			for (int l = 0; l < 4; l++)
 			{
 				if (t.links[l] != none)
@@ -106,14 +182,47 @@ void CurveTerrain::Render()
 					DrawLink(x, y, (CurveTerrain::dir)l, t.links[l]);
 				}
 			}
-				//if (i == 2)
-				//	image.setColor(tx, ty, ofColor(0, 0, 0, 255));
-				//else if (i == 1)
-				//	image.setColor(tx, ty, ofColor(150, 200, 255, 255));
-				//else
-				//	image.setColor(tx, ty, ofColor(150, 255, 200, 255));
 		}
 	}
+}
+
+void CurveTerrain::RenderStep()
+{
+
+}
+
+void CurveTerrain::Render()
+{
+	if (render_y == cellHeight)
+		return;
+
+	if (render_x == 0 && render_y == 0)
+	{
+		RenderBegin();
+	}
+	else
+	{
+		image.begin();
+	}
+
+	ofSetColor(255, 0, 0, 30);
+	ofFill();
+	ofDrawRectangle(render_x * cellSize, render_y * cellSize, cellSize, cellSize);
+	Cell c = cells[render_y*cellWidth + render_x];
+	if (c.visited == false)
+	{
+		ofSetColor(0, 0, 0, 255);
+		ofSetLineWidth(3);
+		DrawIsland(render_x, render_y);
+	}
+
+	render_x++;
+	if (render_x == cellWidth)
+	{
+		render_y++;
+		render_x = 0;
+	}
+
 	image.end();
 }
 
@@ -198,8 +307,8 @@ void CurveTerrain::SetupTiles()
 				CurveTerrain::dir::none} };
 	// 0 1
 	// 1 1
-	tiles[14] = { {CurveTerrain::dir::none,
-		CurveTerrain::dir::top, CurveTerrain::dir::none,
+	tiles[14] = { {CurveTerrain::dir::left,
+		CurveTerrain::dir::none, CurveTerrain::dir::none,
 				CurveTerrain::dir::none} };
 	// 1 1
 	// 1 1

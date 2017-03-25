@@ -6,7 +6,8 @@
 
 
 //--------------------------------------------------------------
-void ofApp::setup(){
+void ofApp::setup()
+{
 	ofSetWindowTitle("Tiny Map");
 
 	ofBackground(0, 0, 0);
@@ -29,14 +30,8 @@ void ofApp::setup(){
 }
 
 //--------------------------------------------------------------
-void ofApp::update(){
-
-	for (int i = 0; i < (int)step::done; i++)
-	{
-		if (stages[i] != NULL)
-			stages[i]->Setup();
-	}
-
+void ofApp::update()
+{
 	if (currentStep < step::done)
 	{
 		if (stages[(int)currentStep] != NULL)
@@ -101,6 +96,7 @@ void ofApp::draw()
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
 
+	stages[(int)step::islands]->Render();
 }
 
 //--------------------------------------------------------------

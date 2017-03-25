@@ -12,7 +12,6 @@ public:
 	virtual void Render();
 	virtual void Draw();
 
-	bool OnLand(int x, int y);
 
 	enum dir {
 		top,
@@ -25,18 +24,36 @@ public:
 	struct Tile {
 		dir links[4];
 	};
+	struct Cell {
+		Tile tile;
+		bool visited;
+	};
 
 private:
-	ofColor TerrainColour(int x, int y);
-	Tile TileForPos(int x, int y);
+	void RenderBegin();
+	void RenderStep();
 
-	ofPoint PointForDir(dir d);
-	void DrawLink(int x, int y, dir start, dir end);
-
-	void SetupTiles();
+	int render_x;
+	int render_y;
 
 	ofFbo image;
 
+	ofColor TerrainColour(int x, int y);
+	Tile TileForPos(int x, int y);
+
+	bool OnLand(int x, int y);
+
+	ofPoint PointForDir(dir d);
+	dir PairDir(dir d);
+	ofPoint DirOffset(dir d);
+	void DrawLink(int x, int y, dir start, dir end);
+	void DrawIsland(int cellx, int celly);
+
+	void SetupTiles();
 	Tile tiles[16];
+
+	int cellWidth;
+	int cellHeight;
+	Cell* cells;
 };
 
