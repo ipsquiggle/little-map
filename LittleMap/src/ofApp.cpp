@@ -272,9 +272,9 @@ ofColor latLon(float x, float y)
 {
 	float vals[4];
 	vals[0] = x + latLonNoise(x, y) * gridWobble;
-	vals[1] = x + 1 + latLonNoise(x + 1, y) * gridWobble;
+	vals[1] = x + 2 + latLonNoise(x + 2, y) * gridWobble;
 	vals[2] = y + latLonNoise(x, y) * gridWobble;
-	vals[3] = y + 1 + latLonNoise(x, y + 1) * gridWobble;
+	vals[3] = y + 2 + latLonNoise(x, y + 2) * gridWobble;
 
 	if (std::fmod(vals[0], gridSpacing) > std::fmod(vals[1], gridSpacing) || std::fmod(vals[2], gridSpacing) > std::fmod(vals[3], gridSpacing))
 		return ofColor(0, 0, 0, 255);
