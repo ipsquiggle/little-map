@@ -48,6 +48,8 @@ private:
 	dir PairDir(dir d);
 	ofPoint DirOffset(dir d);
 	void DrawLink(int x, int y, dir start, dir end);
+	ofPoint LinkPos(int x, int y, dir end);
+	void NextCell(int x, int y, dir currentDir, int &outx, int &outy, dir &nextDir);
 	bool DrawIsland(int cellx, int celly);
 
 	void SetupTiles();

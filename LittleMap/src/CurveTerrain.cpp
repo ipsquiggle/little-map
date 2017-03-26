@@ -130,6 +130,21 @@ void CurveTerrain::DrawLink(int x, int y, dir start, dir end)
 	ofDrawLine(ps, pe);
 }
 
+ofPoint CurveTerrain::LinkPos(int x, int y, dir end)
+{
+	ofPoint corner(x*cellSize, y*cellSize);
+	return corner + PointForDir(end) * cellSize;
+}
+
+void CurveTerrain::NextCell(int x, int y, CurveTerrain::dir currentDir, int &outx, int &outy, CurveTerrain::dir &nextDir)
+{
+	Cell &current = cells[y*cellWidth + x];
+	ofPoint offset = DirOffset(current.tile.links[currentDir]);
+	outx = x + offset.x;
+	outy = y + offset.y;
+	nextDir = PairDir(current.tile.links[currentDir]);
+}
+
 bool CurveTerrain::DrawIsland(int x, int y)
 {
 	// the first cell in the link is kinda weird.
@@ -148,15 +163,37 @@ bool CurveTerrain::DrawIsland(int x, int y)
 	if (d == none)
 		return false;
 
+	ofPath path = ofPath();
+	path.setMode(ofPath::Mode::POLYLINES);
+	path.setStrokeWidth(2);
+	path.setStrokeColor(ofColor::black);
+	path.setFillColor(ofColor(150, 255, 200, 255));
+
+	ofPoint linkPos = LinkPos(x, y, d);
+	// ofPath doesn't draw the first or last points, they are just control points for the curve, 
+	// so we will draw the entrance and exit points in the start cell.
+	// This makes the first Drawn point the exit of the first cell.
+	path.curveTo(linkPos);
 	do {
 		next->visited = true;
-		DrawLink(x, y, d, next->tile.links[d]);
-		ofPoint offset = DirOffset(next->tile.links[d]);
-		x = x + offset.x;
-		y = y + offset.y;
-		d = PairDir(next->tile.links[d]);
+		linkPos = LinkPos(x, y, next->tile.links[d]);
+		path.curveTo(linkPos);
+
+		NextCell(x, y, d, x, y, d);
 		next = &cells[y*cellWidth + x];
 	} while (next != first);
+	// ... and since the last Drawn point also needs, to be the exit of the first cell,
+	// we draw through the first cell AGAIN, and the second cell AGAIN! Nice....
+	linkPos = LinkPos(x, y, next->tile.links[d]);
+	path.curveTo(linkPos);
+
+	NextCell(x, y, d, x, y, d);
+	next = &cells[y*cellWidth + x];
+
+	linkPos = LinkPos(x, y, next->tile.links[d]);
+	path.curveTo(linkPos);
+
+	path.draw(0, 0);
 
 	return true;
 }
