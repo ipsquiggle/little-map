@@ -130,7 +130,7 @@ void CurveTerrain::DrawLink(int x, int y, dir start, dir end)
 	ofDrawLine(ps, pe);
 }
 
-void CurveTerrain::DrawIsland(int x, int y)
+bool CurveTerrain::DrawIsland(int x, int y)
 {
 	// the first cell in the link is kinda weird.
 	Cell *first = &cells[y*cellWidth + x];
@@ -146,7 +146,7 @@ void CurveTerrain::DrawIsland(int x, int y)
 	}
 	
 	if (d == none)
-		return;
+		return false;
 
 	do {
 		next->visited = true;
@@ -157,6 +157,8 @@ void CurveTerrain::DrawIsland(int x, int y)
 		d = PairDir(next->tile.links[d]);
 		next = &cells[y*cellWidth + x];
 	} while (next != first);
+
+	return true;
 }
 
 void CurveTerrain::RenderBegin()
@@ -191,10 +193,10 @@ void CurveTerrain::RenderStep()
 
 }
 
-void CurveTerrain::Render()
+bool CurveTerrain::DoRender()
 {
 	if (render_y == cellHeight)
-		return;
+		return true;
 
 	if (render_x == 0 && render_y == 0)
 	{
@@ -205,16 +207,22 @@ void CurveTerrain::Render()
 		image.begin();
 	}
 
-	ofSetColor(255, 0, 0, 30);
-	ofFill();
-	ofDrawRectangle(render_x * cellSize, render_y * cellSize, cellSize, cellSize);
 	Cell c = cells[render_y*cellWidth + render_x];
 	if (c.visited == false)
 	{
 		ofSetColor(0, 0, 0, 255);
 		ofSetLineWidth(3);
-		DrawIsland(render_x, render_y);
+		if (DrawIsland(render_x, render_y))
+			ofSetColor(0, 255, 0, 30);
+		else
+			ofSetColor(255, 0, 0, 30);
 	}
+	else
+	{
+		ofSetColor(0, 0, 255, 30);
+	}
+	ofFill();
+	ofDrawRectangle(render_x * cellSize, render_y * cellSize, cellSize, cellSize);
 
 	render_x++;
 	if (render_x == cellWidth)
@@ -224,6 +232,14 @@ void CurveTerrain::Render()
 	}
 
 	image.end();
+	return false;
+}
+
+bool CurveTerrain::Render()
+{
+	return DoRender();
+	//while (!DoRender()) {}
+	//return true;
 }
 
 void CurveTerrain::Draw()

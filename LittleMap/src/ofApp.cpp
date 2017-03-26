@@ -34,9 +34,12 @@ void ofApp::update()
 {
 	if (currentStep < step::done)
 	{
+		bool next = true;
 		if (stages[(int)currentStep] != NULL)
-			stages[(int)currentStep]->Render();
-		currentStep = (step)(((int)currentStep)+1);
+			next = stages[(int)currentStep]->Render();
+
+		if(next)
+			currentStep = (step)(((int)currentStep)+1);
 	}
 }
 

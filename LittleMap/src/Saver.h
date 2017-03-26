@@ -9,6 +9,6 @@ public:
 	~Saver();
 
 	virtual void Setup();
-	virtual void Render();
+	virtual bool Render();
 	virtual void Draw();
 };

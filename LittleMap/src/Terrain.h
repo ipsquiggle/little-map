@@ -9,7 +9,7 @@ public:
 	~Terrain();
 
 	virtual void Setup();
-	virtual void Render();
+	virtual bool Render();
 	virtual void Draw();
 
 	bool OnLand(int x, int y);

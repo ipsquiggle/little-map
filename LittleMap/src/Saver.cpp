@@ -12,7 +12,7 @@ void Saver::Setup()
 {
 }
 
-void Saver::Render()
+bool Saver::Render()
 {
 	ofImage snapshot;
 	snapshot.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
@@ -22,6 +22,8 @@ void Saver::Render()
 	char filename[MAX_PATH];
 	strftime(filename, sizeof(filename), "little_map-%Y%m%d-%H%M%S.png", &tmStruct);
 	snapshot.save(filename);
+
+	return true;
 }
 
 void Saver::Draw()

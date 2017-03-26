@@ -62,7 +62,7 @@ Terrain::Tile Terrain::TileForPos(int x, int y)
 }
 
 
-void Terrain::Render()
+bool Terrain::Render()
 {
 	image = ofImage();
 	image.allocate(ofGetWidth(), ofGetHeight(), ofImageType::OF_IMAGE_COLOR_ALPHA);
@@ -91,6 +91,7 @@ void Terrain::Render()
 	}
 
 	image.update();
+	return true;
 }
 
 void Terrain::Draw()

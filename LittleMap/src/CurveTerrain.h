@@ -9,7 +9,7 @@ public:
 	~CurveTerrain();
 
 	virtual void Setup();
-	virtual void Render();
+	virtual bool Render();
 	virtual void Draw();
 
 
@@ -32,6 +32,7 @@ public:
 private:
 	void RenderBegin();
 	void RenderStep();
+	bool DoRender();
 
 	int render_x;
 	int render_y;
@@ -47,7 +48,7 @@ private:
 	dir PairDir(dir d);
 	ofPoint DirOffset(dir d);
 	void DrawLink(int x, int y, dir start, dir end);
-	void DrawIsland(int cellx, int celly);
+	bool DrawIsland(int cellx, int celly);
 
 	void SetupTiles();
 	Tile tiles[16];

@@ -37,7 +37,7 @@ ofColor LatLon::LatLonColour(int x, int y)
 }
 
 
-void LatLon::Render()
+bool LatLon::Render()
 {
 	image = ofImage();
 	image.allocate(ofGetWidth(), ofGetHeight(), ofImageType::OF_IMAGE_COLOR_ALPHA);
@@ -52,6 +52,7 @@ void LatLon::Render()
 	}
 
 	image.update();
+	return true;
 }
 
 void LatLon::Draw()

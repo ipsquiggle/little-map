@@ -6,7 +6,7 @@ public:
 	~Stage();
 
 	virtual void Setup() {};
-	virtual void Render() {};
+	virtual bool Render() { return true; };
 	virtual void Draw() {};
 };
 
