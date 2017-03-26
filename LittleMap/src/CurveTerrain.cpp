@@ -5,8 +5,9 @@ const int cellSize = 20;
 const float noiseScale = 0.05f * cellSize;
 
 
-CurveTerrain::CurveTerrain()
+CurveTerrain::CurveTerrain(bool debug)
 {
+	this->debug = debug;
 }
 
 CurveTerrain::~CurveTerrain()
@@ -70,15 +71,18 @@ CurveTerrain::Tile CurveTerrain::TileForPos(int x, int y)
 	hits[2] = (int)OnLand(x, y + 1);
 	hits[3] = (int)OnLand(x + 1, y + 1);
 
-	for (int i = 0; i < 4; i++)
+	if (debug)
 	{
-		int ix = x * cellSize + (cellSize/8) + (i % 2) * cellSize * 6 / 8;
-		int iy = y * cellSize + (cellSize/8) + (i / 2) * cellSize * 6 / 8;
-		if (hits[i])
-			ofSetColor(0, 150, 0, 255);
-		else
-			ofSetColor(200, 0, 0, 255);
-		ofDrawCircle(ix, iy, 2);
+		for (int i = 0; i < 4; i++)
+		{
+			int ix = x * cellSize + (cellSize / 8) + (i % 2) * cellSize * 6 / 8;
+			int iy = y * cellSize + (cellSize / 8) + (i / 2) * cellSize * 6 / 8;
+			if (hits[i])
+				ofSetColor(0, 150, 0, 255);
+			else
+				ofSetColor(200, 0, 0, 255);
+			ofDrawCircle(ix, iy, 2);
+		}
 	}
 
 	int index = hits[3] << 3 | hits[2] << 2 | hits[1] << 1 | hits[0];
@@ -165,7 +169,7 @@ bool CurveTerrain::DrawIsland(int x, int y)
 
 	ofPath path = ofPath();
 	path.setMode(ofPath::Mode::POLYLINES);
-	path.setStrokeWidth(2);
+	path.setStrokeWidth(3);
 	path.setStrokeColor(ofColor::black);
 	path.setFillColor(ofColor(150, 255, 200, 255));
 
@@ -247,19 +251,25 @@ bool CurveTerrain::DoRender()
 	Cell c = cells[render_y*cellWidth + render_x];
 	if (c.visited == false)
 	{
-		ofSetColor(0, 0, 0, 255);
-		ofSetLineWidth(3);
-		if (DrawIsland(render_x, render_y))
-			ofSetColor(0, 255, 0, 30);
-		else
-			ofSetColor(255, 0, 0, 30);
+		bool newIsland = DrawIsland(render_x, render_y);
+		if (debug)
+		{
+			if (newIsland)
+				ofSetColor(0, 255, 0, 30);
+			else
+				ofSetColor(255, 0, 0, 30);
+		}
 	}
-	else
+	else if (debug)
 	{
 		ofSetColor(0, 0, 255, 30);
 	}
-	ofFill();
-	ofDrawRectangle(render_x * cellSize, render_y * cellSize, cellSize, cellSize);
+
+	if (debug)
+	{
+		ofFill();
+		ofDrawRectangle(render_x * cellSize, render_y * cellSize, cellSize, cellSize);
+	}
 
 	render_x++;
 	if (render_x == cellWidth)
@@ -274,9 +284,15 @@ bool CurveTerrain::DoRender()
 
 bool CurveTerrain::Render()
 {
-	return DoRender();
-	//while (!DoRender()) {}
-	//return true;
+	if (debug)
+	{
+		return DoRender();
+	}
+	else
+	{
+		while (!DoRender()) {}
+		return true;
+	}
 }
 
 void CurveTerrain::Draw()

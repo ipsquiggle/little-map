@@ -5,7 +5,7 @@
 class CurveTerrain : public Stage
 {
 public:
-	CurveTerrain();
+	CurveTerrain(bool debug);
 	~CurveTerrain();
 
 	virtual void Setup();
@@ -30,6 +30,8 @@ public:
 	};
 
 private:
+	bool debug = false;
+
 	void RenderBegin();
 	void RenderStep();
 	bool DoRender();

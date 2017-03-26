@@ -14,7 +14,7 @@ void ofApp::setup()
 
 	stages = new Stage*[(int)step::done];
 	stages[(int)step::start] = NULL;
-	stages[(int)step::islands] = new CurveTerrain();
+	stages[(int)step::islands] = new CurveTerrain(false);
 	stages[(int)step::lines] = new LatLon();
 	stages[(int)step::landmarks] = NULL;
 	stages[(int)step::paths] = NULL;
