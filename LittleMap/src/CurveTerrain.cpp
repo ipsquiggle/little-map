@@ -1,13 +1,18 @@
 #include "CurveTerrain.h"
 #include "Noise.h"
 
-const int cellSize = 20;
-const float noiseScale = 0.05f * cellSize;
+const int cellSize = 10;
+const float noiseScale = 0.015f * cellSize;
+const int noiseOctaves = 5;
 
 
 CurveTerrain::CurveTerrain(bool debug)
 {
 	this->debug = debug;
+
+	waterColor = ofColor(150, 200, 255, 255);
+	landColor = ofColor(150, 255, 200, 255);
+	lineColor = ofColor::black;
 }
 
 CurveTerrain::~CurveTerrain()
@@ -26,50 +31,46 @@ void CurveTerrain::Setup()
 	render_y = 0;
 }
 
-bool CurveTerrain::OnLand(int x, int y)
+float CurveTerrain::OnLand(int x, int y)
 {
 	// note this test is for cellWidth, not cellWidth-1, because we test both the left
 	// and right edge of a cell, i.e. the final cell we test's right edge is actually
 	// at cellWidth, even though the cell's index is cellWidth-1
 	if (x == 0 || y == 0 || x == cellWidth || y == cellHeight)
-		return false;
+		return -0.1; // just a little bit ocean at the edges
 
-	return Noise(x*noiseScale, y*noiseScale, 4, 0.5f, 0.4f) < 0.45f;
+	return Noise(x*noiseScale, y*noiseScale, noiseOctaves, 0.5f, 0.6f) - 0.45f;
 }
 
-ofColor CurveTerrain::TerrainColour(int x, int y)
+void CurveTerrain::Biases(float biases[4], int x, int y)
 {
-	bool hits[4];
-	hits[0] = OnLand(x, y);
-	hits[1] = OnLand(x + 1, y);
-	hits[2] = OnLand(x, y + 1);
-	hits[3] = OnLand(x + 1, y + 1);
-
-	bool land = false;
-	bool water = false;
-	for (int i = 0; i < 4; i++)
-	{
-		if (hits[i])
-			land = true;
-		else
-			water = true;
-	}
-
-	if (land && water)
-		return ofColor(0, 0, 0, 255);
-	else if (land)
-		return ofColor(150, 255, 200, 255);
-	else
-		return ofColor(150, 200, 255);
+	biases[0] = OnLand(x, y);
+	biases[1] = OnLand(x + 1, y);
+	biases[2] = OnLand(x, y + 1);
+	biases[3] = OnLand(x + 1, y + 1);
 }
 
-CurveTerrain::Tile CurveTerrain::TileForPos(int x, int y)
+void CurveTerrain::BHits(float biases[4], int hits[4])
 {
+
+	hits[0] = (int)(biases[0] > 0);
+	hits[1] = (int)(biases[1] > 0);
+	hits[2] = (int)(biases[2] > 0);
+	hits[3] = (int)(biases[3] > 0);
+}
+
+void CurveTerrain::Hits(int hits[4], int x, int y)
+{
+	float biases[4];
+	Biases(biases, x, y);
+	BHits(biases, hits);
+}
+
+CurveTerrain::Tile CurveTerrain::TileForPos(int x, int y, float biases[4])
+{
+	Biases(biases, x, y);
 	int hits[4];
-	hits[0] = (int)OnLand(x, y);
-	hits[1] = (int)OnLand(x + 1, y);
-	hits[2] = (int)OnLand(x, y + 1);
-	hits[3] = (int)OnLand(x + 1, y + 1);
+	BHits(biases, hits);
 
 	if (debug)
 	{
@@ -77,7 +78,7 @@ CurveTerrain::Tile CurveTerrain::TileForPos(int x, int y)
 		{
 			int ix = x * cellSize + (cellSize / 8) + (i % 2) * cellSize * 6 / 8;
 			int iy = y * cellSize + (cellSize / 8) + (i / 2) * cellSize * 6 / 8;
-			if (hits[i])
+			if (hits[0])
 				ofSetColor(0, 150, 0, 255);
 			else
 				ofSetColor(200, 0, 0, 255);
@@ -89,18 +90,28 @@ CurveTerrain::Tile CurveTerrain::TileForPos(int x, int y)
 	return tiles[index];
 }
 
-ofPoint CurveTerrain::PointForDir(dir d)
+ofPoint CurveTerrain::PointForDir(dir d, float bias[4])
 {
+	float div = 0;
+	float b = 0;
 	switch (d)
 	{
 	case top:
-		return ofPoint(0.5f, 0);
+		div = (bias[0] - bias[1]);
+		b = div == 0 ? 0.5f : bias[0] / div;
+		return ofPoint(b, 0);
 	case left:
-		return ofPoint(0, 0.5f);
+		div = (bias[0] - bias[2]);
+		b = div == 0 ? 0.5f : bias[0] / div;
+		return ofPoint(0, b);
 	case right:
-		return ofPoint(1.0f, 0.5f);
+		div = (bias[1] - bias[3]);
+		b = div == 0 ? 0.5f : bias[1] / div;
+		return ofPoint(1.0f, b);
 	case bottom:
-		return ofPoint(0.5f, 1.0f);
+		div = (bias[2] - bias[3]);
+		b = div == 0 ? 0.5f : bias[2] / div;
+		return ofPoint(b, 1.0f);
 	}
 }
 
@@ -126,18 +137,18 @@ ofPoint CurveTerrain::DirOffset(CurveTerrain::dir d)
 	}
 }
 
-void CurveTerrain::DrawLink(int x, int y, dir start, dir end)
+void CurveTerrain::DrawLink(int x, int y, dir start, dir end, float bias[4])
 {
 	ofPoint corner(x*cellSize, y*cellSize);
-	ofPoint ps = corner + PointForDir(start) * cellSize;
-	ofPoint pe = corner + PointForDir(end) * cellSize;
+	ofPoint ps = corner + PointForDir(start, bias) * cellSize;
+	ofPoint pe = corner + PointForDir(end, bias) * cellSize;
 	ofDrawLine(ps, pe);
 }
 
-ofPoint CurveTerrain::LinkPos(int x, int y, dir end)
+ofPoint CurveTerrain::LinkPos(int x, int y, dir end, float bias[4])
 {
 	ofPoint corner(x*cellSize, y*cellSize);
-	return corner + PointForDir(end) * cellSize;
+	return corner + PointForDir(end, bias) * cellSize;
 }
 
 void CurveTerrain::NextCell(int x, int y, CurveTerrain::dir currentDir, int &outx, int &outy, CurveTerrain::dir &nextDir)
@@ -170,17 +181,26 @@ bool CurveTerrain::DrawIsland(int x, int y)
 	ofPath path = ofPath();
 	path.setMode(ofPath::Mode::POLYLINES);
 	path.setStrokeWidth(3);
-	path.setStrokeColor(ofColor::black);
-	path.setFillColor(ofColor(150, 255, 200, 255));
+	path.setStrokeColor(lineColor);
+	// This needs to pick watercolor of we're drawing a lake!
+	// I think I can solve this by:
+	// - we always start on a corner when starting an island
+	// - the fill colour should match the minority color of the corner
+	// - e.g.  L L   is the corner of a W region. I just don't have the
+	//         L W   land and water data easily at this phase.
+	int hits[4];
+	Hits(hits, x, y);
+	int numHits = hits[0] + hits[1] + hits[2] + hits[3];
+	path.setFillColor(numHits == 3 ? waterColor : landColor);
 
-	ofPoint linkPos = LinkPos(x, y, d);
+	ofPoint linkPos = LinkPos(x, y, d, next->bias);
 	// ofPath doesn't draw the first or last points, they are just control points for the curve, 
 	// so we will draw the entrance and exit points in the start cell.
 	// This makes the first Drawn point the exit of the first cell.
 	path.curveTo(linkPos);
 	do {
 		next->visited = true;
-		linkPos = LinkPos(x, y, next->tile.links[d]);
+		linkPos = LinkPos(x, y, next->tile.links[d], next->bias);
 		path.curveTo(linkPos);
 
 		NextCell(x, y, d, x, y, d);
@@ -188,13 +208,13 @@ bool CurveTerrain::DrawIsland(int x, int y)
 	} while (next != first);
 	// ... and since the last Drawn point also needs, to be the exit of the first cell,
 	// we draw through the first cell AGAIN, and the second cell AGAIN! Nice....
-	linkPos = LinkPos(x, y, next->tile.links[d]);
+	linkPos = LinkPos(x, y, next->tile.links[d], next->bias);
 	path.curveTo(linkPos);
 
 	NextCell(x, y, d, x, y, d);
 	next = &cells[y*cellWidth + x];
 
-	linkPos = LinkPos(x, y, next->tile.links[d]);
+	linkPos = LinkPos(x, y, next->tile.links[d], next->bias);
 	path.curveTo(linkPos);
 
 	path.draw(0, 0);
@@ -208,7 +228,7 @@ void CurveTerrain::RenderBegin()
 	image.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
 
 	image.begin();
-	ofClear(255, 255, 255, 255);
+	ofClear(waterColor);
 
 	ofSetColor(0, 0, 255, 255);
 	ofSetLineWidth(1);
@@ -216,13 +236,21 @@ void CurveTerrain::RenderBegin()
 	{
 		for (int x = 0; x < cellWidth; x++)
 		{
-			Tile t = TileForPos(x, y);
-			cells[y*cellWidth + x] = { t, false };
-			for (int l = 0; l < 4; l++)
+			float bias[4];
+			float defaultBias[4]{ 0,0,0,0 };
+			Tile t = TileForPos(x, y, bias);
+			cells[y*cellWidth + x] = { t, false, bias[0], bias[1], bias[2], bias[3] };
+			if (debug)
 			{
-				if (t.links[l] != none)
+				for (int l = 0; l < 4; l++)
 				{
-					DrawLink(x, y, (CurveTerrain::dir)l, t.links[l]);
+					if (t.links[l] != none)
+					{
+						ofSetColor(ofColor::red);
+						DrawLink(x, y, (CurveTerrain::dir)l, t.links[l], defaultBias);
+						ofSetColor(ofColor::black);
+						DrawLink(x, y, (CurveTerrain::dir)l, t.links[l], bias);
+					}
 				}
 			}
 		}
@@ -231,23 +259,6 @@ void CurveTerrain::RenderBegin()
 
 void CurveTerrain::RenderStep()
 {
-
-}
-
-bool CurveTerrain::DoRender()
-{
-	if (render_y == cellHeight)
-		return true;
-
-	if (render_x == 0 && render_y == 0)
-	{
-		RenderBegin();
-	}
-	else
-	{
-		image.begin();
-	}
-
 	Cell c = cells[render_y*cellWidth + render_x];
 	if (c.visited == false)
 	{
@@ -270,6 +281,25 @@ bool CurveTerrain::DoRender()
 		ofFill();
 		ofDrawRectangle(render_x * cellSize, render_y * cellSize, cellSize, cellSize);
 	}
+}
+
+bool CurveTerrain::DoRender()
+{
+	if (render_y == cellHeight)
+		return true;
+
+	if (render_x == 0 && render_y == 0)
+	{
+		RenderBegin();
+	}
+	else
+	{
+		image.begin();
+	}
+
+	RenderStep();
+
+	image.end();
 
 	render_x++;
 	if (render_x == cellWidth)
@@ -278,7 +308,6 @@ bool CurveTerrain::DoRender()
 		render_x = 0;
 	}
 
-	image.end();
 	return false;
 }
 
