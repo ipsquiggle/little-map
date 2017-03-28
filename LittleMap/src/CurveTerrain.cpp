@@ -37,7 +37,7 @@ float CurveTerrain::OnLand(int x, int y)
 	// and right edge of a cell, i.e. the final cell we test's right edge is actually
 	// at cellWidth, even though the cell's index is cellWidth-1
 	if (x == 0 || y == 0 || x == cellWidth || y == cellHeight)
-		return -0.1; // just a little bit ocean at the edges
+		return -0.001; // just a little bit ocean at the edges
 
 	return Noise(x*noiseScale, y*noiseScale, noiseOctaves, 0.5f, 0.6f) - 0.45f;
 }

@@ -1,9 +1,20 @@
 #include "ofApp.h"
 
+#include "Noise.h"
+
 #include "CurveTerrain.h"
 #include "LatLon.h"
 #include "Saver.h"
 
+
+void statusMessage(char* message)
+{
+	printf("%s\n", message);
+	ofSetColor(ofColor::black);
+	ofDrawBitmapString(message, 11, ofGetHeight() - 9);
+	ofSetColor(ofColor::white);
+	ofDrawBitmapString(message, 10, ofGetHeight() - 10);
+}
 
 //--------------------------------------------------------------
 void ofApp::setup()
@@ -11,6 +22,10 @@ void ofApp::setup()
 	ofSetWindowTitle("Tiny Map");
 
 	ofBackground(0, 0, 0);
+
+	int seed = (int)std::time(nullptr);
+	printf("Seed: %d\n", seed);
+	SetNoiseSeed(seed);
 
 	stages = new Stage*[(int)step::done];
 	stages[(int)step::start] = NULL;
@@ -41,15 +56,6 @@ void ofApp::update()
 		if(next)
 			currentStep = (step)(((int)currentStep)+1);
 	}
-}
-
-void statusMessage(char* message)
-{
-	printf("%s\n", message);
-	ofSetColor(ofColor::black);
-	ofDrawBitmapString(message, 11, ofGetHeight() - 9);
-	ofSetColor(ofColor::white);
-	ofDrawBitmapString(message, 10, ofGetHeight() - 10);
 }
 
 //--------------------------------------------------------------
@@ -90,7 +96,7 @@ void ofApp::draw()
 			statusMessage("Save");
 			break;
 		case(step::done):
-			statusMessage("Done");
+			//statusMessage("Done");
 			break;
 	}
 
