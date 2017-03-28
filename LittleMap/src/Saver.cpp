@@ -22,6 +22,7 @@ bool Saver::Render()
 	char filename[MAX_PATH];
 	strftime(filename, sizeof(filename), "little_map-%Y%m%d-%H%M%S.png", &tmStruct);
 	snapshot.save(filename);
+	snapshot.save("../latest.png");
 
 	return true;
 }
