@@ -22,6 +22,7 @@ void ofApp::setup()
 	ofSetWindowTitle("Tiny Map");
 
 	ofBackground(0, 0, 0);
+	ofEnableSmoothing();
 
 	int seed = (int)std::time(nullptr);
 	printf("Seed: %d\n", seed);

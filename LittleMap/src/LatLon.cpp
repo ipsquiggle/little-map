@@ -3,7 +3,8 @@
 
 const float gridNoiseScale = 0.05f;
 const float gridSpacing = 100.0f;
-const float gridWobble = 15.0f;
+const float gridWobble = 10.0f;
+const float gridDetail = 12.0f;
 
 LatLon::LatLon()
 {
@@ -22,36 +23,48 @@ float LatLon::LatLonNoise(float x, float y)
 	return Noise(x*gridNoiseScale, y*gridNoiseScale, 3, 0.5f, 0.4f);
 }
 
-ofColor LatLon::LatLonColour(int x, int y)
-{
-	float vals[4];
-	vals[0] = x + LatLonNoise(x, y) * gridWobble;
-	vals[1] = x + 2 + LatLonNoise(x + 2, y) * gridWobble;
-	vals[2] = y + LatLonNoise(x, y) * gridWobble;
-	vals[3] = y + 2 + LatLonNoise(x, y + 2) * gridWobble;
-
-	if (std::fmod(vals[0], gridSpacing) > std::fmod(vals[1], gridSpacing) || std::fmod(vals[2], gridSpacing) > std::fmod(vals[3], gridSpacing))
-		return ofColor(0, 0, 0, 255);
-	else
-		return ofColor(0, 0, 0, 0);
-}
-
-
 bool LatLon::Render()
 {
-	image = ofImage();
-	image.allocate(ofGetWidth(), ofGetHeight(), ofImageType::OF_IMAGE_COLOR_ALPHA);
+	image = ofFbo();
+	image.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
 
-	for (int y = 0; y < ofGetHeight(); y++)
+	image.begin();
+	ofClear(0, 0, 0, 0);
+
+	for (int y = 0; y < ofGetHeight(); y += gridSpacing)
 	{
-		for (int x = 0; x < ofGetWidth(); x++)
+		ofPath path = ofPath();
+		path.setMode(ofPath::Mode::POLYLINES);
+		path.setStrokeWidth(2);
+		path.setStrokeColor(ofColor(0, 0, 0, 255));
+		path.setFilled(false);
+		path.curveTo(ofPoint(0, y));
+		for (int x = -gridDetail; x < ofGetWidth() + gridDetail; x += gridDetail)
 		{
-			ofColor color = LatLonColour(x, y);
-			image.setColor(x, y, color);
+			ofPoint offset(LatLonNoise(x, y), LatLonNoise(x, y + 1000.0f));
+			path.curveTo(offset * gridWobble + ofPoint(x, y));
 		}
+		path.draw(0, 0);
 	}
 
-	image.update();
+	for (int x = 0; x < ofGetWidth(); x += gridSpacing)
+	{
+		ofPath path = ofPath();
+		path.setMode(ofPath::Mode::POLYLINES);
+		path.setStrokeWidth(2);
+		path.setStrokeColor(ofColor(0, 0, 0, 255));
+		path.setFilled(false);
+		path.curveTo(ofPoint(x, 0));
+		for (int y = -gridDetail; y < ofGetHeight() + gridDetail; y += gridDetail)
+		{
+			ofPoint offset(LatLonNoise(x, y), LatLonNoise(x, y + 1000.0f));
+			path.curveTo(offset * gridWobble + ofPoint(x, y));
+		}
+		path.curveTo(ofPoint(x, ofGetHeight()));
+		path.draw(0, 0);
+	}
+
+	image.end();
 	return true;
 }
 
