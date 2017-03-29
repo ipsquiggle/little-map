@@ -1,5 +1,9 @@
 #include "Landmarks.h"
 
+int numLandmarks = 20;
+float avoidRadius = 40.0f;
+float iconScale = 0.5f;
+
 Landmarks::Landmarks()
 {
 }
@@ -21,10 +25,8 @@ void Landmarks::Setup()
 	{
 		ofFile f = icons.getFile(i);
 		int found = f.getFileName().find("icon-");
-		printf("Find: %d %s\n", found, f.getFileName().c_str());
 		if (found >= 0)
 		{
-			printf("... found!\n");
 			files.push_back(f);
 		}
 	}
@@ -32,13 +34,61 @@ void Landmarks::Setup()
 
 bool Landmarks::Render()
 {
+	image = ofFbo();
+	image.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+
+	image.begin();
+	ofClear(0, 0, 0, 0);
+
+	icons = vector<ofImage>();
 	for (int i = 0; i < files.size(); i++)
 	{
-		printf("Found icon: %s\n", files[i].getFileName().c_str());
+		printf("\tFound icon: %s\n", files[i].getFileName().c_str());
+		ofImage icon;
+		icon.load(files[i]);
+		icons.push_back(icon);
 	}
+
+	landmarks = vector<Landmark>();
+	for (int i = 0; i < numLandmarks; i++)
+	{
+		Landmark landmark;
+		landmark.iconIdx = std::rand() % icons.size();
+		bool found = false;
+		while (!found)
+		{
+			ofPoint pt(ofRandom(ofGetWidth()), ofRandom(ofGetHeight()));
+			found = true;
+			for (int o = 0; o < landmarks.size(); o++)
+			{
+				Landmark other = landmarks[o];
+				if (other.pos.distance(pt) < avoidRadius)
+				{
+					found = false;
+					break;
+				}
+			}
+			if (found)
+			{
+				landmark.pos = pt;
+				landmarks.push_back(landmark);
+			}
+		}
+	}
+
+	for (int i = 0; i < landmarks.size(); i++)
+	{
+		Landmark landmark = landmarks[i];
+		ofImage icon = icons[landmark.iconIdx];
+		icon.draw(landmark.pos, icon.getWidth()*iconScale, icon.getHeight()*iconScale);
+	}
+
+	image.end();
+
 	return true;
 }
 
 void Landmarks::Draw()
 {
+	image.draw(0, 0);
 }

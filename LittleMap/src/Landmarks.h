@@ -14,6 +14,15 @@ public:
 	virtual bool Render();
 	virtual void Draw();
 
+	struct Landmark {
+		ofPoint pos;
+		int iconIdx;
+	};
+
 private:
 	vector<ofFile> files;
+	vector<ofImage> icons;
+	vector<Landmark> landmarks;
+
+	ofFbo image;
 };
