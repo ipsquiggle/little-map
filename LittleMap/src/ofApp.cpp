@@ -4,6 +4,7 @@
 
 #include "CurveTerrain.h"
 #include "LatLon.h"
+#include "Landmarks.h"
 #include "Saver.h"
 
 
@@ -32,7 +33,7 @@ void ofApp::setup()
 	stages[(int)step::start] = NULL;
 	stages[(int)step::islands] = new CurveTerrain(false);
 	stages[(int)step::lines] = new LatLon();
-	stages[(int)step::landmarks] = NULL;
+	stages[(int)step::landmarks] = new Landmarks();
 	stages[(int)step::paths] = NULL;
 	stages[(int)step::paper] = NULL;
 	stages[(int)step::legend] = NULL;

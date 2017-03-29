@@ -25,6 +25,9 @@
     <ClCompile Include="src\CurveTerrain.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Landmarks.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -54,6 +57,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\CurveTerrain.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Landmarks.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
