@@ -31,13 +31,19 @@ void CurveTerrain::Setup()
 	render_y = 0;
 }
 
-float CurveTerrain::OnLand(int x, int y)
+float CurveTerrain::GetLandValue(float x, float y)
+{
+	return OnLand(x / cellSize, y / cellSize);
+}
+
+// Takes floats but expects cell coordinates.
+float CurveTerrain::OnLand(float x, float y)
 {
 	// note this test is for cellWidth, not cellWidth-1, because we test both the left
 	// and right edge of a cell, i.e. the final cell we test's right edge is actually
 	// at cellWidth, even though the cell's index is cellWidth-1
 	if (x == 0 || y == 0 || x == cellWidth || y == cellHeight)
-		return -0.001; // just a little bit ocean at the edges
+		return -0.001f; // just a little bit ocean at the edges
 
 	return Noise(x*noiseScale, y*noiseScale, noiseOctaves, 0.5f, 0.6f) - 0.45f;
 }

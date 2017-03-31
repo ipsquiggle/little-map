@@ -12,6 +12,7 @@ public:
 	virtual bool Render();
 	virtual void Draw();
 
+	float GetLandValue(float x, float y);
 
 	enum dir {
 		top,
@@ -46,10 +47,10 @@ private:
 
 	ofFbo image;
 
+	float OnLand(float x, float y);
 	void Biases(float biases[4], int x, int y);
 	void BHits(float biases[4], int hits[4]);
 	void Hits(int hits[4], int x, int y);
-	float OnLand(int x, int y);
 	Tile TileForPos(int x, int y, float bias[4]);
 
 	ofPoint PointForDir(dir d, float bias[4]);

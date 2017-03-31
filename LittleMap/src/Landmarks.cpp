@@ -1,10 +1,13 @@
 #include "Landmarks.h"
 
-int numLandmarks = 20;
-float avoidRadius = 40.0f;
+float placementGridSize = 160.0f;
+float avoidRadiusLand = 40.0f;
+float avoidRadiusWater = 150.0f;
+float shorelineNoiseAvoid = 0.10f;
 float iconScale = 0.5f;
 
-Landmarks::Landmarks()
+Landmarks::Landmarks(CurveTerrain &terrain)
+	: terrain(terrain)
 {
 }
 
@@ -48,40 +51,69 @@ bool Landmarks::Render()
 		icon.load(files[i]);
 		icons.push_back(icon);
 	}
+	printf("Placing landmarks\n");
 
 	landmarks = vector<Landmark>();
-	for (int i = 0; i < numLandmarks; i++)
+	for (int y = 0; y < ofGetHeight(); y += placementGridSize)
 	{
-		Landmark landmark;
-		landmark.iconIdx = std::rand() % icons.size();
-		bool found = false;
-		while (!found)
+		for (int x = 0; x < ofGetWidth(); x += placementGridSize)
 		{
-			ofPoint pt(ofRandom(ofGetWidth()), ofRandom(ofGetHeight()));
-			found = true;
-			for (int o = 0; o < landmarks.size(); o++)
+			Landmark landmark;
+			landmark.iconIdx = std::rand() % icons.size();
+			bool found = false;
+			for (int attempt = 0; attempt < 10; attempt++)
 			{
-				Landmark other = landmarks[o];
-				if (other.pos.distance(pt) < avoidRadius)
+				ofPoint pt = ofPoint(ofRandom(placementGridSize), ofRandom(placementGridSize))
+					+ ofPoint(x, y);
+
+				float onLand = terrain.GetLandValue(pt.x, pt.y);
+
+				// keep a way from shore, cheap way
+				if (onLand > -shorelineNoiseAvoid && onLand < shorelineNoiseAvoid)
+					continue;
+
+				found = true;
+				float avoidRadius = onLand > 0 ? avoidRadiusLand : avoidRadiusWater;
+				for (int o = 0; o < landmarks.size(); o++)
 				{
-					found = false;
+					Landmark other = landmarks[o];
+					if (other.pos.distance(pt) < avoidRadius)
+					{
+						found = false;
+						break;
+					}
+				}
+				if (found)
+				{
+					printf("\tPlaced landmark %d,%d after %d tries.\n", x, y, attempt);
+					landmark.pos = pt;
+					landmark.onLand = onLand;
+					landmarks.push_back(landmark);
 					break;
 				}
-			}
-			if (found)
-			{
-				landmark.pos = pt;
-				landmarks.push_back(landmark);
 			}
 		}
 	}
 
+	ofEnableAlphaBlending();
 	for (int i = 0; i < landmarks.size(); i++)
 	{
 		Landmark landmark = landmarks[i];
 		ofImage icon = icons[landmark.iconIdx];
+		if (landmark.onLand > 0)
+		{
+			ofSetColor(255, 255, 255, 255);
+			printf("%d onland %f\n", landmark.iconIdx, landmark.onLand);
+		}
+		else
+		{
+			printf("%d onwater %f\n", landmark.iconIdx, landmark.onLand);
+			ofSetColor(255, 255, 255, 150);
+		}
+
 		icon.draw(landmark.pos, icon.getWidth()*iconScale, icon.getHeight()*iconScale);
 	}
+	ofDisableAlphaBlending();
 
 	image.end();
 

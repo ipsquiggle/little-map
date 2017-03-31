@@ -2,12 +2,14 @@
 #include "ofMain.h"
 #include "Stage.h"
 
+#include "CurveTerrain.h"
+
 #include <vector>
 
 class Landmarks : public Stage
 {
 public:
-	Landmarks();
+	Landmarks(CurveTerrain &terrain);
 	~Landmarks();
 
 	virtual void Setup();
@@ -17,9 +19,12 @@ public:
 	struct Landmark {
 		ofPoint pos;
 		int iconIdx;
+		float onLand;
 	};
 
 private:
+	CurveTerrain &terrain;
+
 	vector<ofFile> files;
 	vector<ofImage> icons;
 	vector<Landmark> landmarks;
