@@ -28,6 +28,9 @@
     <ClCompile Include="src\Landmarks.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Paths.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -60,6 +63,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Landmarks.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Paths.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

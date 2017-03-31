@@ -111,7 +111,8 @@ bool Landmarks::Render()
 			ofSetColor(255, 255, 255, 150);
 		}
 
-		icon.draw(landmark.pos, icon.getWidth()*iconScale, icon.getHeight()*iconScale);
+		ofPoint offset(icon.getWidth() * iconScale / 2, icon.getHeight() * iconScale / 2);
+		icon.draw(landmark.pos - offset, icon.getWidth()*iconScale, icon.getHeight()*iconScale);
 	}
 	ofDisableAlphaBlending();
 
@@ -123,4 +124,33 @@ bool Landmarks::Render()
 void Landmarks::Draw()
 {
 	image.draw(0, 0);
+}
+
+Landmarks::Landmark Landmarks::GetRandomLandmark()
+{
+	int r = std::rand() % landmarks.size();
+	return landmarks[r];
+}
+
+class DistanceSort
+{
+public:
+	Landmarks::Landmark target;
+	DistanceSort(Landmarks::Landmark t)
+		: target(t)
+	{ }
+
+	bool operator() (Landmarks::Landmark a, Landmarks::Landmark b)
+	{
+		return target.pos.distanceSquared(a.pos) < target.pos.distanceSquared(b.pos);
+	}
+
+};
+
+Landmarks::Landmark Landmarks::GetNthClosestLandmark(Landmark target, int n)
+{
+	vector<Landmark> close = vector<Landmark>(landmarks);
+	DistanceSort sorter = DistanceSort(target);
+	std::sort(close.begin(), close.end(), sorter);
+	return close[n];
 }

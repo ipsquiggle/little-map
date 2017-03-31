@@ -22,6 +22,9 @@ public:
 		float onLand;
 	};
 
+	Landmark GetRandomLandmark();
+	Landmark GetNthClosestLandmark(Landmark landmark, int n);
+
 private:
 	CurveTerrain &terrain;
 
