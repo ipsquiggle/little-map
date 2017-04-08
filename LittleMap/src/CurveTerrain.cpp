@@ -6,9 +6,10 @@ const float noiseScale = 0.015f * cellSize;
 const int noiseOctaves = 5;
 
 
-CurveTerrain::CurveTerrain(bool debug)
+CurveTerrain::CurveTerrain(bool debug, bool drawNoise)
 {
 	this->debug = debug;
+	this->drawNoise = drawNoise;
 
 	waterColor = ofColor(150, 200, 255, 255);
 	landColor = ofColor(150, 255, 200, 255);
@@ -29,6 +30,26 @@ void CurveTerrain::Setup()
 
 	render_x = 0;
 	render_y = 0;
+}
+
+void CurveTerrain::RenderNoiseMap()
+{
+	image = ofFbo();
+	image.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+
+	ofPixels pixels = ofPixels();
+	image.readToPixels(pixels);
+
+	for (int y = 0; y < ofGetHeight(); y++)
+	{
+		for (int x = 0; x < ofGetWidth(); x++)
+		{
+			float landValue = GetLandValue(x, y);
+			ofColor color = ofColor((landValue + 0.45f) * 255);
+			pixels.setColor(x, y, color);
+		}
+	}
+	image.getTexture().loadData(pixels);
 }
 
 float CurveTerrain::GetLandValue(float x, float y)
@@ -319,6 +340,11 @@ bool CurveTerrain::DoRender()
 
 bool CurveTerrain::Render()
 {
+	if (drawNoise)
+	{
+		RenderNoiseMap();
+		return true;
+	}
 	if (debug)
 	{
 		return DoRender();

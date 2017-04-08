@@ -9,13 +9,11 @@
 #include "Saver.h"
 
 
+char* nextMessage;
 void statusMessage(char* message)
 {
 	printf("%s\n", message);
-	ofSetColor(ofColor::black);
-	ofDrawBitmapString(message, 11, ofGetHeight() - 9);
-	ofSetColor(ofColor::white);
-	ofDrawBitmapString(message, 10, ofGetHeight() - 10);
+	nextMessage = message;
 }
 
 //--------------------------------------------------------------
@@ -32,12 +30,12 @@ void ofApp::setup()
 
 	stages = new Stage*[(int)step::done];
 	stages[(int)step::start] = NULL;
-	CurveTerrain *terrain = new CurveTerrain(false);
+	CurveTerrain *terrain = new CurveTerrain(false, false);
 	stages[(int)step::islands] = terrain;
 	stages[(int)step::lines] = new LatLon();
 	Landmarks *landmarks = new Landmarks(*terrain);
 	stages[(int)step::landmarks] = landmarks;
-	stages[(int)step::paths] = new Paths(*landmarks);
+	stages[(int)step::paths] = new Paths(*terrain, *landmarks, false);
 	stages[(int)step::paper] = NULL;
 	stages[(int)step::legend] = NULL;
 	stages[(int)step::save] = new Saver();
@@ -58,8 +56,41 @@ void ofApp::update()
 		if (stages[(int)currentStep] != NULL)
 			next = stages[(int)currentStep]->Render();
 
-		if(next)
-			currentStep = (step)(((int)currentStep)+1);
+		if (next)
+		{
+			currentStep = (step)(((int)currentStep) + 1);
+			switch (currentStep)
+			{
+			case (step::start):
+				statusMessage("Start");
+				break;
+			case(step::islands):
+				statusMessage("Islands");
+				break;
+			case(step::lines):
+				statusMessage("Lines");
+				break;
+			case(step::landmarks):
+				statusMessage("Landmarks");
+				break;
+			case(step::paths):
+				statusMessage("Paths");
+				break;
+			case(step::paper):
+				statusMessage("Paper");
+				break;
+			case(step::legend):
+				statusMessage("Legend");
+				break;
+			case(step::save):
+				statusMessage("Save");
+				break;
+			case(step::done):
+				//statusMessage("Done");
+				break;
+			}
+		}
+
 	}
 }
 
@@ -74,37 +105,13 @@ void ofApp::draw()
 			stages[i]->Draw();
 	}
 
-	switch (currentStep)
+	if (nextMessage != nullptr)
 	{
-		case (step::start):
-			statusMessage("Start");
-			break;
-		case(step::islands):
-			statusMessage("Islands");
-			break;
-		case(step::lines):
-			statusMessage("Lines");
-			break;
-		case(step::landmarks):
-			statusMessage("Landmarks");
-			break;
-		case(step::paths):
-			statusMessage("Paths");
-			break;
-		case(step::paper):
-			statusMessage("Paper");
-			break;
-		case(step::legend):
-			statusMessage("Legend");
-			break;
-		case(step::save):
-			statusMessage("Save");
-			break;
-		case(step::done):
-			//statusMessage("Done");
-			break;
+		ofSetColor(ofColor::black);
+		ofDrawBitmapString(nextMessage, 11, ofGetHeight() - 9);
+		ofSetColor(ofColor::white);
+		ofDrawBitmapString(nextMessage, 10, ofGetHeight() - 10);
 	}
-
 }
 
 //--------------------------------------------------------------

@@ -5,7 +5,7 @@
 class CurveTerrain : public Stage
 {
 public:
-	CurveTerrain(bool debug);
+	CurveTerrain(bool debug, bool drawNoise=false);
 	~CurveTerrain();
 
 	virtual void Setup();
@@ -34,10 +34,12 @@ public:
 private:
 	// config
 	bool debug = false;
+	bool drawNoise = false;
 	ofColor waterColor;
 	ofColor landColor;
 	ofColor lineColor;
 
+	void RenderNoiseMap();
 	void RenderBegin();
 	void RenderStep();
 	bool DoRender();

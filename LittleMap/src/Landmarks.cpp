@@ -152,5 +152,10 @@ Landmarks::Landmark Landmarks::GetNthClosestLandmark(Landmark target, int n)
 	vector<Landmark> close = vector<Landmark>(landmarks);
 	DistanceSort sorter = DistanceSort(target);
 	std::sort(close.begin(), close.end(), sorter);
+	printf("About to look for the %dth landmark.\n", n);
+	for (int i = 0; i < close.size(); i++)
+	{
+		printf("  %d : %f\n", i, close[i].pos.distance(target.pos));
+	}
 	return close[n];
 }
