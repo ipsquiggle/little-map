@@ -2,9 +2,9 @@
 
 #include <chrono>
 
-int numPaths = 10;
+int numPaths = 4;
 int minNearest = 1;
-int maxNearest = 7;
+int maxNearest = 17;
 float pathSegDist = 10.0f;
 
 Paths::Paths(CurveTerrain &terrain, Landmarks &landmarks, bool debug)
@@ -35,6 +35,7 @@ float lerp(float a, float b, float t)
 	return ((b - a)*t) + a;
 }
 
+float shoreline = 0.50f;
 float Paths::Cost(ofPoint start, ofPoint pos, ofPoint next, ofPoint target)
 {
 	float startVal = terrain.GetLandValue(start.x, start.y);
@@ -49,7 +50,9 @@ float Paths::Cost(ofPoint start, ofPoint pos, ofPoint next, ofPoint target)
 		lerp(targetVal, startVal, nextDist / pathDist)));
 
 	float valDiff = std::abs(nextVal - idealHeight);
-	float valCost = valDiff * pathSegDist * 4000.0f;
+	float valCost = std::abs(nextVal) < shoreline
+		? 4000.0f *pathSegDist / valDiff
+		: valDiff * pathSegDist * 4000.0f;
 
 	float distCost = nextDist;
 	if (nextDist > pathDist)
@@ -153,6 +156,8 @@ void Paths::FindPath(Path& path)
 	}
 }
 
+float dotSpacing = 10.0f;
+float noDrawSpacing = 6.0f*6.0f;
 void Paths::TracePath(Path& path)
 {
 	ofPolyline stroke = ofPolyline();
@@ -184,9 +189,25 @@ void Paths::TracePath(Path& path)
 	while (stroke.getIndexAtLength(len) < stroke.size()-1) // apparently size - 1....
 	{
 		ofPoint pt = stroke.getPointAtLength(len);
-		ofDrawCircle(pt, 3);
+		bool blocked = false;
+		for (auto otherLine : drawnPaths)
+		{
+			ofPoint otherPt = otherLine.getClosestPoint(pt);
+			if (pt.distanceSquared(otherPt) < noDrawSpacing)
+			{
+				blocked = true;
+				break;
+			}
+		}
+		
+		if (!blocked)
+		{
+			ofDrawCircle(pt, 3);
+		}
 		len += 10;
 	}
+
+	drawnPaths.push_back(stroke);
 
 	path.progress.traced = true;
 	printf("\t%d length\n", path.progress.length);
@@ -311,6 +332,7 @@ bool Paths::Render()
 	if (pathIdx == -1)
 	{
 		paths = vector<Path>();
+		drawnPaths = vector<ofPolyline>();
 
 		for (int i = 0; i < numPaths; i++)
 		{
@@ -364,13 +386,19 @@ bool Paths::Render()
 	if (debug)
 	{
 		debugImage.begin();
-		//DebugRender();
-		RenderCosts();
+		DebugRender();
+		//RenderCosts();
 		debugImage.end();
 	}
 
 	if (doneWorking)
 	{
+		if (debug)
+		{
+			debugImage.begin();
+			ofClear(0, 0, 0, 0);
+			debugImage.end();
+		}
 		pathIdx++;
 	}
 

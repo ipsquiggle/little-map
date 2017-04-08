@@ -61,6 +61,8 @@ private:
 		}
 	};
 
+	vector<ofPolyline> drawnPaths;
+
 	void SetupPath(Path& path);
 	void FindPath(Path& path);
 	void TracePath(Path& path);
