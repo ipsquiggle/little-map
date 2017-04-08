@@ -155,21 +155,17 @@ void Paths::FindPath(Path& path)
 
 void Paths::TracePath(Path& path)
 {
-	ofPath stroke = ofPath();
-	stroke.setMode(ofPath::Mode::POLYLINES);
-	stroke.setStrokeWidth(2);
-	stroke.setFilled(false);
-	stroke.setStrokeColor(ofColor::black);
+	ofPolyline stroke = ofPolyline();
+	//stroke.setStrokeWidth(2);
+	//stroke.setFilled(false);
+	//stroke.setStrokeColor(ofColor::black);
 
 	stroke.curveTo(path.progress.visited[path.progress.currentIndex].pos);
 	stroke.curveTo(path.progress.visited[path.progress.currentIndex].pos);
 
 	while (path.progress.visited[path.progress.currentIndex].parent != -1)
 	{
-		if (path.progress.length % 3 == 0)
-		{
-			stroke.curveTo(path.progress.visited[path.progress.visited[path.progress.currentIndex].parent].pos);
-		}
+		stroke.curveTo(path.progress.visited[path.progress.visited[path.progress.currentIndex].parent].pos);
 		path.progress.currentIndex = path.progress.visited[path.progress.currentIndex].parent;
 		path.progress.length++;
 	}
@@ -177,7 +173,20 @@ void Paths::TracePath(Path& path)
 	stroke.curveTo(path.progress.visited[path.progress.currentIndex].pos);
 	stroke.curveTo(path.progress.visited[path.progress.currentIndex].pos);
 
-	stroke.draw(0, 0);
+	stroke = stroke.getSmoothed(30, 1);
+
+	//stroke.draw(0, 0);
+
+	ofFill();
+	ofEnableSmoothing();
+	ofSetColor(ofColor::black);
+	float len = 0;
+	while (stroke.getIndexAtLength(len) < stroke.size()-1) // apparently size - 1....
+	{
+		ofPoint pt = stroke.getPointAtLength(len);
+		ofDrawCircle(pt, 3);
+		len += 10;
+	}
 
 	path.progress.traced = true;
 	printf("\t%d length\n", path.progress.length);
