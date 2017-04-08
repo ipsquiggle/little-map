@@ -155,17 +155,32 @@ void Paths::FindPath(Path& path)
 
 void Paths::TracePath(Path& path)
 {
-	if (path.progress.currentIndex != -1 && path.progress.visited[path.progress.currentIndex].parent != -1)
+	ofPath stroke = ofPath();
+	stroke.setMode(ofPath::Mode::POLYLINES);
+	stroke.setStrokeWidth(2);
+	stroke.setFilled(false);
+	stroke.setStrokeColor(ofColor::black);
+
+	stroke.curveTo(path.progress.visited[path.progress.currentIndex].pos);
+	stroke.curveTo(path.progress.visited[path.progress.currentIndex].pos);
+
+	while (path.progress.visited[path.progress.currentIndex].parent != -1)
 	{
-		path.progress.length++;
-		ofDrawLine(path.progress.visited[path.progress.currentIndex].pos, path.progress.visited[path.progress.visited[path.progress.currentIndex].parent].pos);
+		if (path.progress.length % 3 == 0)
+		{
+			stroke.curveTo(path.progress.visited[path.progress.visited[path.progress.currentIndex].parent].pos);
+		}
 		path.progress.currentIndex = path.progress.visited[path.progress.currentIndex].parent;
+		path.progress.length++;
 	}
-	else
-	{
-		path.progress.traced = true;
-		printf("\t%d length", path.progress.length);
-	}
+
+	stroke.curveTo(path.progress.visited[path.progress.currentIndex].pos);
+	stroke.curveTo(path.progress.visited[path.progress.currentIndex].pos);
+
+	stroke.draw(0, 0);
+
+	path.progress.traced = true;
+	printf("\t%d length\n", path.progress.length);
 }
 
 bool Paths::DoRender()

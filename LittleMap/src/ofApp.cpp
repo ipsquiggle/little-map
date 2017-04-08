@@ -52,9 +52,11 @@ void ofApp::update()
 {
 	if (currentStep < step::done)
 	{
-		bool next = true;
+		bool next = false;
 		if (stages[(int)currentStep] != NULL)
 			next = stages[(int)currentStep]->Render();
+		else
+			next = true;
 
 		if (next)
 		{
@@ -86,7 +88,9 @@ void ofApp::update()
 				statusMessage("Save");
 				break;
 			case(step::done):
-				//statusMessage("Done");
+				statusMessage("Done");
+				break;
+			default:
 				break;
 			}
 		}
