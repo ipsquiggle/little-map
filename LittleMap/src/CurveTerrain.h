@@ -35,8 +35,7 @@ private:
 	// config
 	bool debug = false;
 	bool drawNoise = false;
-	ofColor waterColor;
-	ofColor landColor;
+	ofColor landColor[8];
 	ofColor lineColor;
 
 	void RenderNoiseMap();
@@ -48,7 +47,9 @@ private:
 	int render_y;
 
 	ofFbo image;
+	float* noiseMap;
 
+	float ComputeLandValue(float x, float y);
 	float OnLand(float x, float y);
 	void Biases(float biases[4], int x, int y);
 	void BHits(float biases[4], int hits[4]);

@@ -2,7 +2,7 @@
 #include "Noise.h"
 
 const int cellSize = 10;
-const float noiseScale = 0.015f * cellSize;
+const float noiseScale = 0.015f;
 const int noiseOctaves = 5;
 
 
@@ -11,8 +11,14 @@ CurveTerrain::CurveTerrain(bool debug, bool drawNoise)
 	this->debug = debug;
 	this->drawNoise = drawNoise;
 
-	waterColor = ofColor(150, 200, 255, 255);
-	landColor = ofColor(150, 255, 200, 255);
+	landColor[0] = ofColor( 90, 140, 195, 255);
+	landColor[1] = ofColor(110, 160, 215, 255);
+	landColor[2] = ofColor(130, 180, 235, 255);
+	landColor[3] = ofColor(150, 200, 255, 255);
+	landColor[4] = ofColor( 90, 195, 140, 255);
+	landColor[5] = ofColor(110, 215, 160, 255);
+	landColor[6] = ofColor(130, 235, 180, 255);
+	landColor[7] = ofColor(150, 255, 200, 255);
 	lineColor = ofColor::black;
 }
 
@@ -27,6 +33,16 @@ void CurveTerrain::Setup()
 	cellWidth = ofGetWidth() / cellSize;
 	cellHeight = ofGetHeight() / cellSize;
 	cells = new Cell[cellWidth * cellHeight];
+
+	noiseMap = new float[ofGetWidth() * ofGetHeight()];
+	for (int y = 0; y < ofGetHeight(); y++)
+	{
+		for (int x = 0; x < ofGetWidth(); x++)
+		{
+			float landValue = ComputeLandValue(x, y);
+			noiseMap[x + y * ofGetWidth()] = landValue;
+		}
+	}
 
 	render_x = 0;
 	render_y = 0;
@@ -52,9 +68,21 @@ void CurveTerrain::RenderNoiseMap()
 	image.getTexture().loadData(pixels);
 }
 
+float CurveTerrain::ComputeLandValue(float x, float y)
+{
+	return Noise(x*noiseScale, y*noiseScale, noiseOctaves, 0.5f, 0.6f) - 0.45f;
+}
+
+float Clamp(float v, float min, float max)
+{
+	return std::min(max, std::max(min, v));
+}
+
 float CurveTerrain::GetLandValue(float x, float y)
 {
-	return OnLand(x / cellSize, y / cellSize);
+	int ix = (int)std::floor(Clamp(x, 0, ofGetWidth()-1));
+	int iy = (int)std::floor(Clamp(y, 0, ofGetHeight()-1));
+	return noiseMap[ix + iy * ofGetWidth()];
 }
 
 // Takes floats but expects cell coordinates.
@@ -66,7 +94,7 @@ float CurveTerrain::OnLand(float x, float y)
 	if (x == 0 || y == 0 || x == cellWidth || y == cellHeight)
 		return -0.001f; // just a little bit ocean at the edges
 
-	return Noise(x*noiseScale, y*noiseScale, noiseOctaves, 0.5f, 0.6f) - 0.45f;
+	return GetLandValue(x * cellSize, y * cellSize);
 }
 
 void CurveTerrain::Biases(float biases[4], int x, int y)
@@ -101,11 +129,15 @@ CurveTerrain::Tile CurveTerrain::TileForPos(int x, int y, float biases[4])
 
 	if (debug)
 	{
+		ofNoFill();
+		ofSetColor(150, 150, 150, 50);
+		ofDrawRectangle(x * cellSize, y * cellSize, cellSize, cellSize);
+		ofFill();
 		for (int i = 0; i < 4; i++)
 		{
 			int ix = x * cellSize + (cellSize / 8) + (i % 2) * cellSize * 6 / 8;
 			int iy = y * cellSize + (cellSize / 8) + (i / 2) * cellSize * 6 / 8;
-			if (hits[0])
+			if (hits[i])
 				ofSetColor(0, 150, 0, 255);
 			else
 				ofSetColor(200, 0, 0, 255);
@@ -218,7 +250,7 @@ bool CurveTerrain::DrawIsland(int x, int y)
 	int hits[4];
 	Hits(hits, x, y);
 	int numHits = hits[0] + hits[1] + hits[2] + hits[3];
-	path.setFillColor(numHits == 3 ? waterColor : landColor);
+	path.setFillColor(numHits == 3 ? landColor[3] : landColor[4]);
 
 	ofPoint linkPos = LinkPos(x, y, d, next->bias);
 	// ofPath doesn't draw the first or last points, they are just control points for the curve, 
@@ -251,11 +283,21 @@ bool CurveTerrain::DrawIsland(int x, int y)
 
 void CurveTerrain::RenderBegin()
 {
-	image = ofFbo();
-	image.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+	if (!image.isAllocated())
+	{
+		image = ofFbo();
+		image.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
 
-	image.begin();
-	ofClear(waterColor);
+		image.begin();
+		if (debug)
+		{
+			ofClear(ofColor::white);
+		}
+		else
+		{
+			ofClear(landColor[3]);
+		}
+	}
 
 	ofSetColor(0, 0, 255, 255);
 	ofSetLineWidth(1);
@@ -306,7 +348,7 @@ void CurveTerrain::RenderStep()
 	if (debug)
 	{
 		ofFill();
-		ofDrawRectangle(render_x * cellSize, render_y * cellSize, cellSize, cellSize);
+		//ofDrawRectangle(render_x * cellSize, render_y * cellSize, cellSize, cellSize);
 	}
 }
 
@@ -340,14 +382,15 @@ bool CurveTerrain::DoRender()
 
 bool CurveTerrain::Render()
 {
-	if (drawNoise)
-	{
-		RenderNoiseMap();
-		return true;
-	}
 	if (debug)
 	{
-		return DoRender();
+		if (drawNoise)
+		{
+			RenderNoiseMap();
+		}
+		DoRender();
+		return false;
+		//return DoRender();
 	}
 	else
 	{
