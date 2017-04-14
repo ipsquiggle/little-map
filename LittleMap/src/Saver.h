@@ -11,4 +11,7 @@ public:
 	virtual void Setup();
 	virtual bool Render();
 	virtual void Draw();
+
+private:
+	bool saved;
 };

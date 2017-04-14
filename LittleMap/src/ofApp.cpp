@@ -35,7 +35,7 @@ void ofApp::setup()
 	stages[(int)step::lines] = new LatLon();
 	Landmarks *landmarks = new Landmarks(*terrain);
 	stages[(int)step::landmarks] = landmarks;
-	stages[(int)step::paths] = new Paths(*terrain, *landmarks, false);
+	stages[(int)step::paths] = new Paths(*terrain, *landmarks, true);
 	stages[(int)step::paper] = NULL;
 	stages[(int)step::legend] = NULL;
 	stages[(int)step::save] = new Saver();
@@ -141,6 +141,13 @@ void ofApp::mouseDragged(int x, int y, int button){
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
 
+	float valCost;
+	float distCost;
+	float totalCost;
+	float spend;
+	Paths* paths = (Paths*)stages[(int)step::paths];
+	paths->GetCosts(ofPoint(x, y), valCost, distCost, totalCost, spend);
+	printf("COSTS: valCost: %f distCost: %f totalCost: %f spend: %f\n", valCost, distCost, totalCost, spend);
 }
 
 //--------------------------------------------------------------
@@ -171,4 +178,12 @@ void ofApp::gotMessage(ofMessage msg){
 //--------------------------------------------------------------
 void ofApp::dragEvent(ofDragInfo dragInfo){ 
 
+}
+
+void ofApp::exit()
+{
+	if (stages[(int)save] != nullptr)
+	{
+		stages[(int)save]->Render();
+	}
 }
