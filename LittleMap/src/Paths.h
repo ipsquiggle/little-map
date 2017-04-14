@@ -10,12 +10,16 @@
 class Paths : public Stage
 {
 public:
-	Paths(CurveTerrain &terrain, Landmarks &landmarks, bool debug = false);
+	Paths(CurveTerrain &terrain, Landmarks &landmarks, int debugNum = 0);
 	~Paths();
 
 	virtual void Setup();
 	virtual bool Render();
 	virtual void Draw();
+	virtual void DebugNum(int key);
+	virtual char* GetMessage();
+
+	void GetCosts(ofPoint pos, float& valCost, float& distCost, float& totalCost, float& spend);
 
 	struct pathBit
 	{
@@ -23,6 +27,10 @@ public:
 		float spend;
 		ofPoint pos;
 		int parent;
+		float TotalCost()
+		{
+			return cost + spend;
+		}
 	};
 
 	struct progress
@@ -46,7 +54,7 @@ public:
 	};
 
 private:
-	bool debug;
+	int debugNum;
 
 	struct OpenSorter
 	{
@@ -57,7 +65,7 @@ private:
 		{
 			pathBit& pba = owner->paths[owner->pathIdx].progress.visited[a];
 			pathBit& pbb = owner->paths[owner->pathIdx].progress.visited[b];
-			return (pba.cost + pba.spend) < (pbb.cost + pbb.spend);
+			return pba.TotalCost() < pbb.TotalCost();
 		}
 	};
 
@@ -70,7 +78,8 @@ private:
 	bool DoRender();
 	void DebugRender();
 	void RenderCosts();
-	float Cost(ofPoint start, ofPoint pos, ofPoint next, ofPoint target);
+	float Cost(ofPoint start, ofPoint next, ofPoint target, float& valCost, float& distCost, float& totalCost, float& spend);
+	float Cost(ofPoint start, ofPoint next, ofPoint target);
 
 	Landmarks &landmarks;
 	CurveTerrain &terrain;
@@ -81,4 +90,6 @@ private:
 
 	ofFbo image;
 	ofFbo debugImage;
+	
+	char* nextMessage;
 };

@@ -35,7 +35,7 @@ void ofApp::setup()
 	stages[(int)step::lines] = new LatLon();
 	Landmarks *landmarks = new Landmarks(*terrain);
 	stages[(int)step::landmarks] = landmarks;
-	stages[(int)step::paths] = new Paths(*terrain, *landmarks, true);
+	stages[(int)step::paths] = new Paths(*terrain, *landmarks, 0);
 	stages[(int)step::paper] = NULL;
 	stages[(int)step::legend] = NULL;
 	stages[(int)step::save] = new Saver();
@@ -112,16 +112,30 @@ void ofApp::draw()
 	if (nextMessage != nullptr)
 	{
 		ofSetColor(ofColor::black);
-		ofDrawBitmapString(nextMessage, 11, ofGetHeight() - 9);
+		ofDrawBitmapString(nextMessage, 11, ofGetHeight() - 19);
 		ofSetColor(ofColor::white);
-		ofDrawBitmapString(nextMessage, 10, ofGetHeight() - 10);
+		ofDrawBitmapString(nextMessage, 10, ofGetHeight() - 20);
+	}
+	if (currentStep < (int)step::done && stages[currentStep] != nullptr)
+	{
+		char* stageMessage = stages[currentStep]->GetMessage();
+		if (stageMessage != nullptr)
+		{
+			ofSetColor(ofColor::black);
+			ofDrawBitmapString(stageMessage, 11, ofGetHeight() - 9);
+			ofSetColor(ofColor::white);
+			ofDrawBitmapString(stageMessage, 10, ofGetHeight() - 10);
+		}
 	}
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
 
-	stages[(int)step::islands]->Render();
+	if (key == 'i')
+		stages[(int)step::islands]->Render();
+	else if (key >= '0' && key <= '9')
+		stages[currentStep]->DebugNum(key);
 }
 
 //--------------------------------------------------------------
@@ -147,7 +161,7 @@ void ofApp::mousePressed(int x, int y, int button){
 	float spend;
 	Paths* paths = (Paths*)stages[(int)step::paths];
 	paths->GetCosts(ofPoint(x, y), valCost, distCost, totalCost, spend);
-	printf("COSTS: valCost: %f distCost: %f totalCost: %f spend: %f\n", valCost, distCost, totalCost, spend);
+	printf("COSTS: valCost: %f \tdistCost: %f \ttotalCost: %f \tspend: %f\n", valCost, distCost, totalCost, spend);
 }
 
 //--------------------------------------------------------------

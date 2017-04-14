@@ -7,10 +7,11 @@ int minNearest = 1;
 int maxNearest = 17;
 float pathSegDist = 10.0f;
 
-Paths::Paths(CurveTerrain &terrain, Landmarks &landmarks, bool debug)
+Paths::Paths(CurveTerrain &terrain, Landmarks &landmarks, int debugNum)
 	: landmarks(landmarks)
 	, terrain(terrain)
-	, debug(debug)
+	, debugNum(debugNum)
+	, nextMessage(nullptr)
 {
 }
 
@@ -36,7 +37,13 @@ float lerp(float a, float b, float t)
 }
 
 float shoreline = 0.50f;
-float Paths::Cost(ofPoint start, ofPoint pos, ofPoint next, ofPoint target)
+
+void Paths::GetCosts(ofPoint pos, float& valCost, float& distCost, float& totalCost, float& spend)
+{
+	Cost(paths[pathIdx].start, pos, paths[pathIdx].end, valCost, distCost, totalCost, spend);
+}
+
+float Paths::Cost(ofPoint start, ofPoint next, ofPoint target, float& valCost, float& distCost, float& totalCost, float& spend)
 {
 	float startVal = terrain.GetLandValue(start.x, start.y);
 	float nextVal = terrain.GetLandValue(next.x, next.y);
@@ -50,18 +57,32 @@ float Paths::Cost(ofPoint start, ofPoint pos, ofPoint next, ofPoint target)
 		lerp(targetVal, startVal, nextDist / pathDist)));
 
 	float valDiff = std::abs(nextVal - idealHeight);
-	float valCost = std::abs(nextVal) < shoreline
+	/*float*/ valCost = /*std::abs(nextVal) < shoreline
 		? 4000.0f *pathSegDist / valDiff
-		: valDiff * pathSegDist * 4000.0f;
+		:*/ valDiff * pathSegDist * 4000.0f;
 
-	float distCost = nextDist;
+	if (nextDist <= pathSegDist)
+		int i = 0;
+	/*float*/ distCost = nextDist;
 	if (nextDist > pathDist)
 	{
 		float outerPart = nextDist - pathDist;
 		distCost += outerPart * outerPart;
 	}
 
-	return nextDist + valCost;
+	/*float*/ totalCost = distCost + valCost;
+	/*float*/ spend = 0;
+	return totalCost;
+}
+
+
+float Paths::Cost(ofPoint start, ofPoint next, ofPoint target)
+{
+	float valCost;
+	float distCost;
+	float totalCost;
+	float spend;
+	return Cost(start, next, target, valCost, distCost, totalCost, spend);
 }
 
 void Paths::SetupPath(Path& path)
@@ -95,6 +116,30 @@ void Paths::FindPath(Path& path)
 		assert(false);
 	}
 	path.progress.open.sort(OpenSorter(this));
+
+	int prev = -1;
+	for (auto pit : path.progress.open)
+	{
+		if (prev == -1)
+		{
+			prev = pit;
+			continue;
+		}
+
+		pathBit& pba = path.progress.visited[prev];
+		pathBit& pbb = path.progress.visited[pit];
+
+		assert(pba.TotalCost() <= pbb.TotalCost());
+
+		pathBit &parenta = path.progress.visited[pba.parent];
+		pathBit &parentb = path.progress.visited[pbb.parent];
+
+		assert(pba.spend > parenta.spend);
+		assert(pbb.spend > parentb.spend);
+
+		prev = pit;
+	}
+
 	if (!path.progress.open.empty())
 	{
 		path.progress.currentIndex = path.progress.open.front();
@@ -121,7 +166,7 @@ void Paths::FindPath(Path& path)
 		for (int i = 0; i < 8; i++)
 		{
 			ofPoint test = path.progress.currentPos + offsets[i] * pathSegDist;
-			float cost = Cost(path.start, path.progress.currentPos, test, path.end) + currentSpend;
+			float cost = Cost(path.start, test, path.end);
 
 			if (test.x < 0 || test.y < 0 || test.x > ofGetWidth() || test.y > ofGetHeight())
 			{
@@ -281,44 +326,110 @@ void Paths::RenderCosts()
 		if (it->second.parent == -1)
 			continue;
 
-		float startVal = terrain.GetLandValue(path.start.x, path.start.y);
-		float nextVal = terrain.GetLandValue(it->second.pos.x, it->second.pos.y);
-		float targetVal = terrain.GetLandValue(path.end.x, path.end.y);
-		
-		float pathDist = path.end.distance(path.start);
-		float nextDist = path.end.distance(it->second.pos);
-		float lowPoint = std::min(startVal, targetVal);
-		float highPoint = std::max(startVal, targetVal);
-		float idealHeight = std::min(highPoint, std::max(lowPoint,
-			lerp(targetVal, startVal, nextDist / pathDist)));
-		//printf("pathDist: %f nextDist: %f lowPoint: %f highPoint: %f idealHeight: %f\n",
-		//	pathDist, nextDist, lowPoint, highPoint, idealHeight);
 
-		float valDiff = std::abs(nextVal - idealHeight);
-		float valCost = valDiff * pathSegDist * 4000.0f;
+		ofPoint start = path.start;
+		ofPoint target = path.end;
+		ofPoint next = it->second.pos;
 
-		float distCost = nextDist;
-		if (nextDist > pathDist)
+	float valCost;
+	float distCost;
+	float totalCost;
+	float spend;
+	Cost(start, next, target, valCost, distCost, totalCost, spend);
+
+	//float startVal = terrain.GetLandValue(start.x, start.y);
+	//float nextVal = terrain.GetLandValue(next.x, next.y);
+	//float targetVal = terrain.GetLandValue(target.x, target.y);
+	//
+	//float pathDist = target.distance(start);
+	//float nextDist = target.distance(next);
+	//float lowPoint = std::min(startVal, targetVal);
+	//float highPoint = std::max(startVal, targetVal);
+	//float idealHeight = std::min(highPoint, std::max(lowPoint,
+	//	lerp(targetVal, startVal, nextDist / pathDist)));
+
+	//float valDiff = std::abs(nextVal - idealHeight);
+	//float valCost = valDiff * pathSegDist * 4000.0f;
+	//float valCost = std::abs(nextVal) < shoreline
+	//	? 4000.0f *pathSegDist / valDiff
+	//	: valDiff * pathSegDist * 4000.0f;
+
+	//float distCost = nextDist;
+	//if (nextDist > pathDist)
+	//{
+	//	float outerPart = nextDist - pathDist;
+	//	distCost += outerPart * outerPart;
+	//}
+
+		if (debugNum == 1)
 		{
-			float outerPart = nextDist - pathDist;
-			distCost += outerPart * outerPart;
+			float cost = it->second.TotalCost();
+			int totalCostColor = cost / 100;
+			ofSetColor(totalCostColor % 255, (totalCostColor / 4) % 255, (totalCostColor / 16) % 255, 255);
+			ofDrawRectangle(it->second.pos - ofPoint(pathSegDist / 2, pathSegDist / 2), pathSegDist, pathSegDist);
+			nextMessage = "Pathbit total cost";
 		}
 
-		int idealHeightColor = (idealHeight + 1.0f) * 5 * 128;
-		ofSetColor(idealHeightColor % 255, (idealHeightColor / 4) % 255, (idealHeightColor / 16) % 255, 255);
-		ofDrawRectangle(it->second.pos - ofPoint(pathSegDist / 2, pathSegDist / 2), pathSegDist, pathSegDist);
-		int nextHeightColor = (nextVal + 1.0f) * 5 * 128;
-		ofSetColor(nextHeightColor % 255, (nextHeightColor / 4) % 255, (nextHeightColor / 16) % 255, 255);
-		ofDrawCircle(it->second.pos, pathSegDist/3);
+		/*
+		if (debugNum == 2)
+		{
+			int idealHeightColor = (idealHeight + 1.0f) * 3 * 128;
+			ofSetColor(idealHeightColor % 255, (idealHeightColor / 4) % 255, (idealHeightColor / 16) % 255, 255);
+			ofDrawRectangle(it->second.pos - ofPoint(pathSegDist / 2, pathSegDist / 2), pathSegDist, pathSegDist);
+			nextMessage = "Ideal height";
+		}
+		if (debugNum == 3)
+		{
+			int nextHeightColor = (nextVal + 1.0f) * 5 * 128;
+			ofSetColor(nextHeightColor % 255, (nextHeightColor / 4) % 255, (nextHeightColor / 16) % 255, 255);
+			ofDrawCircle(it->second.pos, pathSegDist / 5);
+			nextMessage = "Next height";
+		}
+		*/
 
-		//int valCostColor = valCost/100;
-		//ofSetColor(valCostColor % 255, (valCostColor / 4) % 255, (valCostColor / 16) % 255, 255);
-		//ofDrawRectangle(it->second.pos - ofPoint(pathSegDist / 2, pathSegDist / 2), pathSegDist, pathSegDist);
+		if (debugNum == 4)
+		{
+			int valCostColor = valCost / 100;
+			ofSetColor(valCostColor % 255, (valCostColor / 4) % 255, (valCostColor / 16) % 255, 255);
+			ofDrawRectangle(it->second.pos - ofPoint(pathSegDist / 2, pathSegDist / 2), pathSegDist, pathSegDist);
+			nextMessage = "Val cost";
+		}
 
-		//int distCostColor = distCost/10;
-		//ofSetColor(distCostColor % 255, (distCostColor / 4) % 255, (distCostColor / 16) % 255, 255);
-		//ofSetLineWidth(3);
-		//ofDrawLine(it->second.pos - ofPoint(pathSegDist / 2, pathSegDist / 2), it->second.pos + ofPoint(pathSegDist / 2, pathSegDist / 2));
+		if (debugNum == 5)
+		{
+			int distCostColor = distCost / 100;
+			ofSetColor(distCostColor % 255, (distCostColor / 4) % 255, (distCostColor / 16) % 255, 255);
+			ofDrawRectangle(it->second.pos - ofPoint(pathSegDist / 2, pathSegDist / 2), pathSegDist, pathSegDist);
+			//ofDrawLine(it->second.pos - ofPoint(pathSegDist / 2, pathSegDist / 2), it->second.pos + ofPoint(pathSegDist / 2, pathSegDist / 2));
+			nextMessage = "Dist cost";
+		}
+
+		if (debugNum == 6)
+		{
+			float cost = distCost + valCost;
+			int totalCostColor = cost / 100;
+			ofSetColor(totalCostColor % 255, (totalCostColor / 4) % 255, (totalCostColor / 16) % 255, 255);
+			ofDrawRectangle(it->second.pos - ofPoint(pathSegDist / 2, pathSegDist / 2), pathSegDist, pathSegDist);
+			nextMessage = "Computed total cost";
+		}
+
+		if (debugNum == 7)
+		{
+			float cost = it->second.cost;
+			int totalCostColor = cost / 100;
+			ofSetColor(totalCostColor % 255, (totalCostColor / 4) % 255, (totalCostColor / 16) % 255, 255);
+			ofDrawRectangle(it->second.pos - ofPoint(pathSegDist / 2, pathSegDist / 2), pathSegDist, pathSegDist);
+			nextMessage = "Pathbit cost";
+		}
+		
+		if (debugNum == 8)
+		{
+			float cost = Cost(start, next, target);
+			int totalCostColor = cost / 100;
+			ofSetColor(totalCostColor % 255, (totalCostColor / 4) % 255, (totalCostColor / 16) % 255, 255);
+			ofDrawRectangle(it->second.pos - ofPoint(pathSegDist / 2, pathSegDist / 2), pathSegDist, pathSegDist);
+			nextMessage = "Cost function";
+		}
 	}
 
 	ofSetLineWidth(3);
@@ -352,14 +463,11 @@ bool Paths::Render()
 		image = ofFbo();
 		image.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
 
-		if (debug)
-		{
-			debugImage = ofFbo();
-			debugImage.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
-			debugImage.begin();
-			ofClear(0, 0, 0, 0);
-			debugImage.end();
-		}
+		debugImage = ofFbo();
+		debugImage.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+		debugImage.begin();
+		ofClear(0, 0, 0, 0);
+		debugImage.end();
 
 		pathIdx++;
 
@@ -383,22 +491,20 @@ bool Paths::Render()
 
 	image.end();
 
-	if (debug)
+	if (debugNum > 0)
 	{
 		debugImage.begin();
-		DebugRender();
-		//RenderCosts();
+		//DebugRender();
+		RenderCosts();
 		debugImage.end();
 	}
 
-	if (doneWorking)
+	if (debugNum == 0 && doneWorking)
 	{
-		if (debug)
-		{
-			debugImage.begin();
-			ofClear(0, 0, 0, 0);
-			debugImage.end();
-		}
+		debugImage.begin();
+		ofClear(0, 0, 0, 0);
+		debugImage.end();
+
 		pathIdx++;
 	}
 
@@ -407,9 +513,21 @@ bool Paths::Render()
 
 void Paths::Draw()
 {
-	if (debug)
+	if (debugNum > 0)
 	{
 		debugImage.draw(0, 0);
 	}
 	image.draw(0, 0);
+}
+
+void Paths::DebugNum(int key)
+{
+	debugNum = key - '0';
+}
+
+char * Paths::GetMessage()
+{
+	char* message = nextMessage;
+	nextMessage = nullptr;
+	return message;
 }
