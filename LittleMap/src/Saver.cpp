@@ -7,10 +7,6 @@ Saver::Saver()
 
 Saver::~Saver()
 {
-	if (!saved)
-	{
-		Render();
-	}
 }
 
 void Saver::Setup()
