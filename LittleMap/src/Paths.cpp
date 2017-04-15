@@ -97,7 +97,7 @@ void Paths::TracePath(Path& path)
 		{
 			ofDrawCircle(pt, 3);
 		}
-		len += 10;
+		len += dotSpacing;
 	}
 
 	drawnPaths.push_back(stroke);

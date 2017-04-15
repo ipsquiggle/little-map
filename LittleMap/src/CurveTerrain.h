@@ -24,6 +24,7 @@ public:
 
 	struct Tile {
 		dir links[4];
+		bool drawLand;
 	};
 	struct Cell {
 		Tile tile;

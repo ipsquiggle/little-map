@@ -244,20 +244,9 @@ bool CurveTerrain::DrawIsland(int x, int y)
 	if (d == none)
 		return false;
 
-	ofPath path = ofPath();
-	path.setMode(ofPath::Mode::POLYLINES);
-	path.setStrokeWidth(3);
-	path.setStrokeColor(lineColor);
-	// This needs to pick watercolor of we're drawing a lake!
-	// I think I can solve this by:
-	// - we always start on a corner when starting an island
-	// - the fill colour should match the minority color of the corner
-	// - e.g.  L L   is the corner of a W region. I just don't have the
-	//         L W   land and water data easily at this phase.
-	int hits[4];
-	Hits(hits, x, y);
-	int numHits = hits[0] + hits[1] + hits[2] + hits[3];
-	path.setFillColor(numHits == 3 ? landColor[3] : landColor[4]);
+	ofPolyline path = ofPolyline();
+	//path.setStrokeWidth(3);
+	//path.setStrokeColor(lineColor);
 
 	ofPoint linkPos = LinkPos(x, y, d, next->bias);
 	// ofPath doesn't draw the first or last points, they are just control points for the curve, 
@@ -283,7 +272,34 @@ bool CurveTerrain::DrawIsland(int x, int y)
 	linkPos = LinkPos(x, y, next->tile.links[d], next->bias);
 	path.curveTo(linkPos);
 
-	path.draw(0, 0);
+	ofSetColor(next->tile.drawLand ? landColor[4] : landColor[3]);
+	ofFill();
+	ofEnableSmoothing();
+
+	if (!debug)
+	{
+		ofTessellator tesselator = ofTessellator();
+		ofMesh mesh;
+		tesselator.tessellateToMesh(path, ofPolyWindingMode::OF_POLY_WINDING_ODD, mesh);
+		mesh.draw();
+	}
+
+	if (!debug)
+	{
+		ofSetColor(ofColor::black);
+	}
+	ofFill();
+	ofEnableSmoothing();
+	float len = 0;
+	while (path.getIndexAtLength(len) < path.size()-1) // apparently size - 1....
+	{
+		ofPoint pt = path.getPointAtLength(len);
+		
+		//ofDrawCircle(pt, 3);
+		ofDrawCircle(pt, ofRandom(1.5f, 3.0f));
+
+		len += 1;
+	}
 
 	return true;
 }
@@ -297,6 +313,7 @@ void CurveTerrain::RenderBegin()
 	}
 	else
 	{
+		//ofClear(ofColor::white);
 		ofClear(landColor[3]);
 	}
 
@@ -349,7 +366,7 @@ void CurveTerrain::RenderStep()
 	if (debug)
 	{
 		ofFill();
-		//ofDrawRectangle(render_x * cellSize, render_y * cellSize, cellSize, cellSize);
+		ofDrawRectangle(render_x * cellSize, render_y * cellSize, cellSize, cellSize);
 	}
 }
 
@@ -418,17 +435,20 @@ void CurveTerrain::SetupTiles()
 	// 0 0
 	tiles[1] = { {CurveTerrain::dir::none,
 		CurveTerrain::dir::top, CurveTerrain::dir::none,
-				CurveTerrain::dir::none} };
+				CurveTerrain::dir::none},
+			false };
 	// 0 1
 	// 0 0
 	tiles[2] = { {CurveTerrain::dir::right,
 		CurveTerrain::dir::none, CurveTerrain::dir::none,
-				CurveTerrain::dir::none} };
+				CurveTerrain::dir::none},
+			true };
 	// 1 1
 	// 0 0
 	tiles[3] = { {CurveTerrain::dir::none,
 		CurveTerrain::dir::right, CurveTerrain::dir::none,
-				CurveTerrain::dir::none} };
+				CurveTerrain::dir::none},
+			false };
 	// 0 0
 	// 1 0
 	tiles[4] = { {CurveTerrain::dir::none,
@@ -438,32 +458,38 @@ void CurveTerrain::SetupTiles()
 	// 1 0
 	tiles[5] = { {CurveTerrain::dir::none,
 		CurveTerrain::dir::none, CurveTerrain::dir::none,
-				CurveTerrain::dir::top} };
+				CurveTerrain::dir::top},
+			false };
 	// 0 1
 	// 1 0
 	tiles[6] = { {CurveTerrain::dir::right,
 		CurveTerrain::dir::none, CurveTerrain::dir::none,
-				CurveTerrain::dir::left} };
+				CurveTerrain::dir::left},
+			true };
 	// 1 1
 	// 1 0
 	tiles[7] = { {CurveTerrain::dir::none,
 		CurveTerrain::dir::none, CurveTerrain::dir::none,
-				CurveTerrain::dir::right} };
+				CurveTerrain::dir::right},
+			false };
 	// 0 0
 	// 0 1
 	tiles[8] = { {CurveTerrain::dir::none,
 		CurveTerrain::dir::none, CurveTerrain::dir::bottom,
-				CurveTerrain::dir::none} };
+				CurveTerrain::dir::none},
+			true };
 	// 1 0
 	// 0 1
 	tiles[9] = { {CurveTerrain::dir::none,
 		CurveTerrain::dir::top, CurveTerrain::dir::bottom,
-				CurveTerrain::dir::none} };
+				CurveTerrain::dir::none},
+			true };
 	// 0 1
 	// 0 1
 	tiles[10] = { {CurveTerrain::dir::bottom,
 		CurveTerrain::dir::none, CurveTerrain::dir::none,
-				CurveTerrain::dir::none} };
+				CurveTerrain::dir::none},
+			true };
 	// 1 1
 	// 0 1
 	tiles[11] = { {CurveTerrain::dir::none,
@@ -478,12 +504,14 @@ void CurveTerrain::SetupTiles()
 	// 1 1
 	tiles[13] = { {CurveTerrain::dir::none,
 		CurveTerrain::dir::none, CurveTerrain::dir::top,
-				CurveTerrain::dir::none} };
+				CurveTerrain::dir::none},
+			false };
 	// 0 1
 	// 1 1
 	tiles[14] = { {CurveTerrain::dir::left,
 		CurveTerrain::dir::none, CurveTerrain::dir::none,
-				CurveTerrain::dir::none} };
+				CurveTerrain::dir::none},
+			true };
 	// 1 1
 	// 1 1
 	tiles[15] = { {CurveTerrain::dir::none,
