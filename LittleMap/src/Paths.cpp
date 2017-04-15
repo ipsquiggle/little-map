@@ -419,7 +419,7 @@ float Paths::Cost(ofPoint start, ofPoint next, ofPoint target, float& valCost, f
 	}
 
 	float shoreDist = std::abs(1 / (nextVal * 100.0f));
-	/*float*/ shoreCost = shoreDist * 500.0f;
+	/*float*/ shoreCost = std::min(shoreDist * 50000.0f, 10000.0f);
 	/*float*/ totalCost = distCost + valCost + shoreCost;
 	return totalCost;
 }

@@ -32,7 +32,7 @@ void ofApp::setup()
 	ofBackground(0, 0, 0);
 	ofEnableSmoothing();
 
-	autoAdvance = true;
+	autoAdvance = false;
 	doneStep = false;
 
 	stages = new Stage*[(int)step::done];
@@ -185,7 +185,7 @@ void ofApp::keyPressed(int key)
 	bool reset = false;
 	for (int i = currentStep; i >= targetStep; i--)
 	{
-		if (stages[i] != nullptr)
+		if (i < (int)done && stages[i] != nullptr)
 			stages[i]->Reset();
 		reset = true;
 	}
