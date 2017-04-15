@@ -1,7 +1,6 @@
 #include "ofApp.h"
 
-#include "Noise.h"
-
+#include "Start.h"
 #include "CurveTerrain.h"
 #include "LatLon.h"
 #include "Landmarks.h"
@@ -12,8 +11,17 @@
 char* nextMessage;
 void statusMessage(char* message)
 {
-	printf("%s\n", message);
+	if (message != nullptr)
+		printf("%s\n", message);
 	nextMessage = message;
+}
+
+char* subMessage;
+void statusMessage2(char* message)
+{
+	if (message != nullptr)
+		printf("%s\n", message);
+	subMessage = message;
 }
 
 //--------------------------------------------------------------
@@ -24,12 +32,11 @@ void ofApp::setup()
 	ofBackground(0, 0, 0);
 	ofEnableSmoothing();
 
-	int seed = (int)std::time(nullptr);
-	printf("Seed: %d\n", seed);
-	SetNoiseSeed(seed);
+	autoAdvance = true;
+	doneStep = false;
 
 	stages = new Stage*[(int)step::done];
-	stages[(int)step::start] = NULL;
+	stages[(int)step::start] = new Start();
 	CurveTerrain *terrain = new CurveTerrain(false, false);
 	stages[(int)step::islands] = terrain;
 	stages[(int)step::lines] = new LatLon();
@@ -50,51 +57,62 @@ void ofApp::setup()
 //--------------------------------------------------------------
 void ofApp::update()
 {
-	if (currentStep < step::done)
+	if (!doneStep && currentStep < step::done)
 	{
-		bool next = false;
 		if (stages[(int)currentStep] != NULL)
-			next = stages[(int)currentStep]->Render();
-		else
-			next = true;
-
-		if (next)
 		{
-			currentStep = (step)(((int)currentStep) + 1);
-			switch (currentStep)
-			{
-			case (step::start):
-				statusMessage("Start");
-				break;
-			case(step::islands):
-				statusMessage("Islands");
-				break;
-			case(step::lines):
-				statusMessage("Lines");
-				break;
-			case(step::landmarks):
-				statusMessage("Landmarks");
-				break;
-			case(step::paths):
-				statusMessage("Paths");
-				break;
-			case(step::paper):
-				statusMessage("Paper");
-				break;
-			case(step::legend):
-				statusMessage("Legend");
-				break;
-			case(step::save):
-				statusMessage("Save");
-				break;
-			case(step::done):
-				statusMessage("Done");
-				break;
-			default:
-				break;
-			}
+			doneStep = stages[(int)currentStep]->Render();
+		}
+		else
+		{
+			statusMessage2("Done");
+			doneStep = true;
 		}
 
+		if (autoAdvance && doneStep)
+		{
+			Advance();
+		}
+	}
+}
+
+void ofApp::Advance()
+{
+	doneStep = false;
+	statusMessage2(nullptr);
+
+	currentStep = (step)(((int)currentStep) + 1);
+	switch (currentStep)
+	{
+	case (step::start):
+		statusMessage("Start");
+		break;
+	case(step::islands):
+		statusMessage("Islands");
+		break;
+	case(step::lines):
+		statusMessage("Lines");
+		break;
+	case(step::landmarks):
+		statusMessage("Landmarks");
+		break;
+	case(step::paths):
+		statusMessage("Paths");
+		break;
+	case(step::paper):
+		statusMessage("Paper");
+		break;
+	case(step::legend):
+		statusMessage("Legend");
+		break;
+	case(step::save):
+		statusMessage("Save");
+		break;
+	case(step::done):
+		statusMessage("Done");
+		break;
+	default:
+		break;
 	}
 }
 
@@ -130,12 +148,53 @@ void ofApp::draw()
 }
 
 //--------------------------------------------------------------
-void ofApp::keyPressed(int key){
-
-	if (key == 'i')
-		stages[(int)step::islands]->Render();
+void ofApp::keyPressed(int key)
+{
+	int targetStep = ((int)currentStep) + 1;
+	if (key == ' ')
+	{
+		if (doneStep)
+			Advance();
+	}
 	else if (key >= '0' && key <= '9')
-		stages[currentStep]->DebugNum(key);
+	{
+		if (currentStep < (int)done)
+			stages[currentStep]->DebugNum(key);
+	}
+	else if (key == ')')
+		targetStep = 0;
+	else if (key == '!')
+		targetStep = 1;
+	else if (key == '@')
+		targetStep = 2;
+	else if (key == '#')
+		targetStep = 3;
+	else if (key == '$')
+		targetStep = 4;
+	else if (key == '%')
+		targetStep = 5;
+	else if (key == '^')
+		targetStep = 6;
+	else if (key == '&')
+		targetStep = 7;
+	else if (key == '*')
+		targetStep = 8;
+	else if (key == '(')
+		targetStep = 9;
+
+	bool reset = false;
+	for (int i = currentStep; i >= targetStep; i--)
+	{
+		if (stages[i] != nullptr)
+			stages[i]->Reset();
+		reset = true;
+	}
+	if (reset)
+	{
+		autoAdvance = false;
+		currentStep = (step)(targetStep-1);
+		Advance();
+	}
 }
 
 //--------------------------------------------------------------
@@ -153,15 +212,12 @@ void ofApp::mouseDragged(int x, int y, int button){
 }
 
 //--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button){
-
-	float valCost;
-	float distCost;
-	float totalCost;
-	float spend;
-	Paths* paths = (Paths*)stages[(int)step::paths];
-	paths->GetCosts(ofPoint(x, y), valCost, distCost, totalCost, spend);
-	printf("COSTS: valCost: %f \tdistCost: %f \ttotalCost: %f \tspend: %f\n", valCost, distCost, totalCost, spend);
+void ofApp::mousePressed(int x, int y, int button)
+{
+	if (stages[currentStep] != nullptr)
+	{
+		stages[currentStep]->DebugClick(x, y);
+	}
 }
 
 //--------------------------------------------------------------

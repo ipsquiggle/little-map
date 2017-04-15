@@ -16,6 +16,14 @@ LatLon::~LatLon()
 
 void LatLon::Setup()
 {
+	Reset();
+}
+
+void LatLon::Reset()
+{
+	if (image.isAllocated())
+		image.clear();
+	image.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
 }
 
 float LatLon::LatLonNoise(float x, float y)
@@ -25,9 +33,6 @@ float LatLon::LatLonNoise(float x, float y)
 
 bool LatLon::Render()
 {
-	image = ofFbo();
-	image.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
-
 	image.begin();
 	ofClear(0, 0, 0, 0);
 

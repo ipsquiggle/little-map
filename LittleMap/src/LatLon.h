@@ -11,6 +11,7 @@ public:
 	virtual void Setup();
 	virtual bool Render();
 	virtual void Draw();
+	virtual void Reset();
 
 private:
 	float LatLonNoise(float x, float y);

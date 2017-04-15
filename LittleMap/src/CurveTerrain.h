@@ -42,6 +42,7 @@ private:
 	void RenderBegin();
 	void RenderStep();
 	bool DoRender();
+	void Reset();
 
 	int render_x;
 	int render_y;

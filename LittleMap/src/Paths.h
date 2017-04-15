@@ -16,10 +16,12 @@ public:
 	virtual void Setup();
 	virtual bool Render();
 	virtual void Draw();
+	virtual void Reset();
 	virtual void DebugNum(int key);
+	virtual void DebugClick(int x, int y);
 	virtual char* GetMessage();
 
-	void GetCosts(ofPoint pos, float& valCost, float& distCost, float& totalCost, float& spend);
+	void GetCosts(ofPoint pos, float& valCost, float& distCost, float& totalCost, float& shoreCost);
 
 	struct pathBit
 	{
@@ -78,7 +80,7 @@ private:
 	bool DoRender();
 	void DebugRender();
 	void RenderCosts();
-	float Cost(ofPoint start, ofPoint next, ofPoint target, float& valCost, float& distCost, float& totalCost, float& spend);
+	float Cost(ofPoint start, ofPoint next, ofPoint target, float& valCost, float& distCost, float& totalCost, float& shoreCost);
 	float Cost(ofPoint start, ofPoint next, ofPoint target);
 
 	Landmarks &landmarks;

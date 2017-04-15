@@ -184,6 +184,7 @@
     <ClCompile Include="src\Paths.cpp" />
     <ClCompile Include="src\Saver.cpp" />
     <ClCompile Include="src\Stage.cpp" />
+    <ClCompile Include="src\Start.cpp" />
     <ClCompile Include="src\Terrain.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -195,6 +196,7 @@
     <ClInclude Include="src\Paths.h" />
     <ClInclude Include="src\Saver.h" />
     <ClInclude Include="src\Stage.h" />
+    <ClInclude Include="src\Start.h" />
     <ClInclude Include="src\Terrain.h" />
   </ItemGroup>
   <ItemGroup>

@@ -31,6 +31,9 @@
     <ClCompile Include="src\Paths.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Start.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -42,9 +45,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ofApp.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Stage.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Terrain.h">
@@ -66,6 +66,12 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Paths.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Start.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Stage.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

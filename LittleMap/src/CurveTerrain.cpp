@@ -35,6 +35,12 @@ void CurveTerrain::Setup()
 	cells = new Cell[cellWidth * cellHeight];
 
 	noiseMap = new float[ofGetWidth() * ofGetHeight()];
+
+	Reset();
+}
+
+void CurveTerrain::Reset()
+{
 	for (int y = 0; y < ofGetHeight(); y++)
 	{
 		for (int x = 0; x < ofGetWidth(); x++)
@@ -46,13 +52,14 @@ void CurveTerrain::Setup()
 
 	render_x = 0;
 	render_y = 0;
+
+	if (image.isAllocated())
+		image.clear();
+	image.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
 }
 
 void CurveTerrain::RenderNoiseMap()
 {
-	image = ofFbo();
-	image.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
-
 	ofPixels pixels = ofPixels();
 	image.readToPixels(pixels);
 
@@ -283,20 +290,14 @@ bool CurveTerrain::DrawIsland(int x, int y)
 
 void CurveTerrain::RenderBegin()
 {
-	if (!image.isAllocated())
+	image.begin();
+	if (debug)
 	{
-		image = ofFbo();
-		image.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
-
-		image.begin();
-		if (debug)
-		{
-			ofClear(ofColor::white);
-		}
-		else
-		{
-			ofClear(landColor[3]);
-		}
+		ofClear(ofColor::white);
+	}
+	else
+	{
+		ofClear(landColor[3]);
 	}
 
 	ofSetColor(0, 0, 255, 255);

@@ -19,31 +19,20 @@ void Landmarks::Setup()
 {
 	string path = "..";
 
-	ofDirectory icons(path);
-	icons.allowExt("png");
-	icons.listDir();
+	ofDirectory iconsDir(path);
+	iconsDir.allowExt("png");
+	iconsDir.listDir();
 
-	files = vector<ofFile>();
-	for (int i = 0; i < icons.size(); i++)
+	for (int i = 0; i < iconsDir.size(); i++)
 	{
-		ofFile f = icons.getFile(i);
+		ofFile f = iconsDir.getFile(i);
 		int found = f.getFileName().find("icon-");
 		if (found >= 0)
 		{
 			files.push_back(f);
 		}
 	}
-}
 
-bool Landmarks::Render()
-{
-	image = ofFbo();
-	image.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
-
-	image.begin();
-	ofClear(0, 0, 0, 0);
-
-	icons = vector<ofImage>();
 	for (int i = 0; i < files.size(); i++)
 	{
 		printf("\tFound icon: %s\n", files[i].getFileName().c_str());
@@ -51,9 +40,25 @@ bool Landmarks::Render()
 		icon.load(files[i]);
 		icons.push_back(icon);
 	}
+	
+	Reset();
+}
+
+void Landmarks::Reset()
+{
+	if (image.isAllocated())
+		image.clear();
+	image.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+}
+
+bool Landmarks::Render()
+{
+	image.begin();
+	ofClear(0, 0, 0, 0);
+
 	printf("Placing landmarks\n");
 
-	landmarks = vector<Landmark>();
+	landmarks.clear();
 	for (int y = 0; y < ofGetHeight(); y += placementGridSize)
 	{
 		for (int x = 0; x < ofGetWidth(); x += placementGridSize)
