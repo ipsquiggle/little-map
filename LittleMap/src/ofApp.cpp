@@ -5,6 +5,7 @@
 #include "LatLon.h"
 #include "Landmarks.h"
 #include "Paths.h"
+#include "Legend.h"
 #include "Saver.h"
 
 
@@ -32,7 +33,7 @@ void ofApp::setup()
 	ofBackground(0, 0, 0);
 	ofEnableSmoothing();
 
-	autoAdvance = false;
+	autoAdvance = true;
 	doneStep = false;
 
 	stages = new Stage*[(int)step::done];
@@ -43,8 +44,8 @@ void ofApp::setup()
 	Landmarks *landmarks = new Landmarks(*terrain);
 	stages[(int)step::landmarks] = landmarks;
 	stages[(int)step::paths] = new Paths(*terrain, *landmarks, 0);
+	stages[(int)step::legend] = new Legend(*landmarks);
 	stages[(int)step::paper] = NULL;
-	stages[(int)step::legend] = NULL;
 	stages[(int)step::save] = new Saver();
 
 	for (int i = 0; i < (int)step::done; i++)
@@ -85,28 +86,28 @@ void ofApp::Advance()
 	switch (currentStep)
 	{
 	case (step::start):
-		statusMessage("Start");
+		statusMessage("0: Start");
 		break;
 	case(step::islands):
-		statusMessage("Islands");
+		statusMessage("1: Islands");
 		break;
 	case(step::lines):
-		statusMessage("Lines");
+		statusMessage("2: Lines");
 		break;
 	case(step::landmarks):
-		statusMessage("Landmarks");
+		statusMessage("3: Landmarks");
 		break;
 	case(step::paths):
-		statusMessage("Paths");
-		break;
-	case(step::paper):
-		statusMessage("Paper");
+		statusMessage("4: Paths");
 		break;
 	case(step::legend):
-		statusMessage("Legend");
+		statusMessage("5: Legend");
+		break;
+	case(step::paper):
+		statusMessage("6: Paper");
 		break;
 	case(step::save):
-		statusMessage("Save");
+		statusMessage("7: Save");
 		break;
 	case(step::done):
 		statusMessage("Done");

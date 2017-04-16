@@ -32,8 +32,8 @@ private:
 		lines,
 		landmarks,
 		paths,
-		paper,
 		legend,
+		paper,
 
 		save,
 

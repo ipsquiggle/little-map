@@ -23,6 +23,8 @@ public:
 		float onLand;
 	};
 
+	const vector<Landmark> GetLandmarks();
+	void DrawIcon(int idx, ofPoint pt);
 	Landmark GetRandomLandmark();
 	Landmark GetNthClosestLandmark(Landmark landmark, int n);
 

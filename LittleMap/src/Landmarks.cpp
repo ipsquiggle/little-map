@@ -104,7 +104,6 @@ bool Landmarks::Render()
 	for (int i = 0; i < landmarks.size(); i++)
 	{
 		Landmark landmark = landmarks[i];
-		ofImage icon = icons[landmark.iconIdx];
 		if (landmark.onLand > 0)
 		{
 			ofSetColor(255, 255, 255, 255);
@@ -116,8 +115,7 @@ bool Landmarks::Render()
 			ofSetColor(255, 255, 255, 150);
 		}
 
-		ofPoint offset(icon.getWidth() * iconScale / 2, icon.getHeight() * iconScale / 2);
-		icon.draw(landmark.pos - offset, icon.getWidth()*iconScale, icon.getHeight()*iconScale);
+		DrawIcon(landmark.iconIdx, landmark.pos);
 	}
 	ofDisableAlphaBlending();
 
@@ -126,9 +124,21 @@ bool Landmarks::Render()
 	return true;
 }
 
+void Landmarks::DrawIcon(int idx, ofPoint pt)
+{
+	ofImage icon = icons[idx];
+	ofPoint offset(icon.getWidth() * iconScale / 2, icon.getHeight() * iconScale / 2);
+	icon.draw(pt - offset, icon.getWidth()*iconScale, icon.getHeight()*iconScale);
+}
+
 void Landmarks::Draw()
 {
 	image.draw(0, 0);
+}
+
+const vector<Landmarks::Landmark> Landmarks::GetLandmarks()
+{
+	return landmarks;
 }
 
 Landmarks::Landmark Landmarks::GetRandomLandmark()

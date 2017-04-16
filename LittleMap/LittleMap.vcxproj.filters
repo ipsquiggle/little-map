@@ -34,6 +34,9 @@
     <ClCompile Include="src\Start.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Legend.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -72,6 +75,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Stage.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Legend.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
