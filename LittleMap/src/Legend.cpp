@@ -3,11 +3,11 @@
 #include "Noise.h"
 
 int yOffset = 70;
-int ySpacing = 30;
+int ySpacing = 20;
 int xNegOffset = 220;
 int xMargin = 20;
-ofPoint imageOffset(-20, -12);
-int fontSize = 20;
+ofPoint imageOffset(-20, -9);
+int fontSize = 18;
 float adjectiveChance = 0.2f;
 
 

@@ -190,6 +190,15 @@ void ofApp::keyPressed(int key)
 		if (currentStep < (int)done)
 			stages[currentStep]->DebugNum(key);
 	}
+	else if (key == 'r')
+	{
+		targetStep = 0;
+		autoAdvance = true;
+	}
+	else if (key == 'a')
+	{
+		autoAdvance = true;
+	}
 	else if (key == ')')
 		targetStep = 0;
 	else if (key == '!')
