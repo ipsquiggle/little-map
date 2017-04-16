@@ -1,6 +1,8 @@
 #include "LatLon.h"
 #include "Noise.h"
 
+#include "RoughDrawer.h"
+
 const float gridNoiseScale = 0.05f;
 const float gridSpacing = 100.0f;
 const float gridWobble = 10.0f;
@@ -29,19 +31,6 @@ void LatLon::Reset()
 float LatLon::LatLonNoise(float x, float y)
 {
 	return Noise(x*gridNoiseScale, y*gridNoiseScale, 3, 0.5f, 0.4f);
-}
-
-void RoughTracePath(ofPolyline& path, float minSize, float maxSize)
-{
-	float len = 0;
-	while (path.getIndexAtLength(len) < path.size()-1) // apparently size - 1....
-	{
-		ofPoint pt = path.getPointAtLength(len);
-		
-		ofDrawCircle(pt, ofRandom(minSize, maxSize));
-
-		len += 1;
-	}
 }
 
 bool LatLon::Render()

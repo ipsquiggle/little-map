@@ -182,7 +182,9 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Noise.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
+    <ClCompile Include="src\Paper.cpp" />
     <ClCompile Include="src\Paths.cpp" />
+    <ClCompile Include="src\RoughDrawer.cpp" />
     <ClCompile Include="src\Saver.cpp" />
     <ClCompile Include="src\Stage.cpp" />
     <ClCompile Include="src\Start.cpp" />
@@ -195,7 +197,9 @@
     <ClInclude Include="src\Legend.h" />
     <ClInclude Include="src\Noise.h" />
     <ClInclude Include="src\ofApp.h" />
+    <ClInclude Include="src\Paper.h" />
     <ClInclude Include="src\Paths.h" />
+    <ClInclude Include="src\RoughDrawer.h" />
     <ClInclude Include="src\Saver.h" />
     <ClInclude Include="src\Stage.h" />
     <ClInclude Include="src\Start.h" />

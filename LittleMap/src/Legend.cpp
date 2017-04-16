@@ -4,7 +4,8 @@
 
 int yOffset = 70;
 int ySpacing = 30;
-int xNegOffset = 200;
+int xNegOffset = 220;
+int xMargin = 20;
 ofPoint imageOffset(-20, -12);
 int fontSize = 20;
 float adjectiveChance = 0.2f;
@@ -74,6 +75,8 @@ void Legend::Reset()
 	adjectives.push_back("PLEASANT");
 	adjectives.push_back("SAFE");
 
+	legendBounds.set(0, 0, 0, 0);
+
 	if (image.isAllocated())
 		image.clear();
 	image.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
@@ -93,7 +96,7 @@ std::string Legend::GenerateName(int count)
 		dest += pluralNames[idx];
 	}
 
-	if (ofRandom(0, 1) < adjectiveChance)
+	while (ofRandom(0, 1) < adjectiveChance)
 	{
 		int idx = ((int)ofRandom(0, 1000)) % adjectives.size();
 		dest = adjectives[idx] + " " + dest;
@@ -145,6 +148,7 @@ bool Legend::Render()
 
 	image.begin();
 	int current = yOffset;
+	legendBounds.set(ofGetWidth() - xNegOffset, current, 0, 0);
 	for (auto lit : landmarks)
 	{
 		lit.second.name = GenerateName(lit.second.count);
@@ -152,9 +156,12 @@ bool Legend::Render()
 		ofPoint pos = ofPoint(ofGetWidth() - xNegOffset, current);
 
 		ofSetColor(ofColor::black);
-		landmarksRef.DrawIcon(lit.second.landmark.iconIdx, pos + imageOffset);
-		std::string str = BreakString(lit.second.name, xNegOffset);
+		ofRectangle iconBounds = landmarksRef.DrawIcon(lit.second.landmark.iconIdx, pos + imageOffset);
+		std::string str = BreakString(lit.second.name, xNegOffset - xMargin);
 		font.drawString(str, pos.x, pos.y);
+
+		legendBounds.growToInclude(font.getStringBoundingBox(str, pos.x, pos.y));
+		legendBounds.growToInclude(iconBounds);
 
 		current += font.stringHeight(str);
 		current += ySpacing;

@@ -6,6 +6,7 @@
 #include "Landmarks.h"
 #include "Paths.h"
 #include "Legend.h"
+#include "Paper.h"
 #include "Saver.h"
 
 
@@ -37,16 +38,43 @@ void ofApp::setup()
 	doneStep = false;
 
 	stages = new Stage*[(int)step::done];
-	stages[(int)step::start] = new Start();
+
+	Start *start = new Start();
+	stages[(int)step::start] = start;
+
 	CurveTerrain *terrain = new CurveTerrain(false, false);
 	stages[(int)step::islands] = terrain;
-	stages[(int)step::lines] = new LatLon();
+
+	LatLon *latLon = new LatLon();
+	stages[(int)step::lines] = latLon;
+	
 	Landmarks *landmarks = new Landmarks(*terrain);
 	stages[(int)step::landmarks] = landmarks;
-	stages[(int)step::paths] = new Paths(*terrain, *landmarks, 0);
-	stages[(int)step::legend] = new Legend(*landmarks);
-	stages[(int)step::paper] = NULL;
-	stages[(int)step::save] = new Saver();
+
+	Paths *paths = new Paths(*terrain, *landmarks, 0);
+	stages[(int)step::paths] = paths;
+
+	Legend *legend = new Legend(*landmarks);
+	stages[(int)step::legend] = legend;
+
+	Paper *paper = new Paper(*legend);
+	stages[(int)step::paper] = paper;
+
+	Saver *saver = new Saver();
+	stages[(int)step::save] = saver;
+
+
+
+	drawOrder = new Stage*[(int)step::done];
+	drawOrder[0] = start;
+	drawOrder[1] = terrain;
+	drawOrder[2] = latLon;
+	drawOrder[3] = landmarks;
+	drawOrder[4] = paths;
+	drawOrder[5] = paper;
+	drawOrder[6] = legend;
+	drawOrder[7] = saver;
+
 
 	for (int i = 0; i < (int)step::done; i++)
 	{
@@ -124,8 +152,8 @@ void ofApp::draw()
 {
 	for (int i = 0; i < (int)step::done; i++)
 	{
-		if (stages[i] != NULL)
-			stages[i]->Draw();
+		if (drawOrder[i] != NULL)
+			drawOrder[i]->Draw();
 	}
 
 	if (nextMessage != nullptr)

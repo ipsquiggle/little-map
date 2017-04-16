@@ -21,6 +21,8 @@ public:
 		std::string name;
 	};
 
+	ofRectangle GetBounds() { return legendBounds; }
+
 private:
 	Landmarks& landmarksRef;
 
@@ -33,6 +35,8 @@ private:
 
 	map<int, Key> landmarks;
 	ofTrueTypeFont font;
+
+	ofRectangle legendBounds;
 
 	ofFbo image;
 };

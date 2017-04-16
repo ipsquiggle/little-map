@@ -37,6 +37,12 @@
     <ClCompile Include="src\Legend.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Paper.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RoughDrawer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -78,6 +84,12 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Legend.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Paper.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RoughDrawer.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

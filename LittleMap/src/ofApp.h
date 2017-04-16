@@ -47,4 +47,5 @@ private:
 	step currentStep;
 
 	Stage** stages;
+	Stage** drawOrder;
 };

@@ -24,7 +24,7 @@ public:
 	};
 
 	const vector<Landmark> GetLandmarks();
-	void DrawIcon(int idx, ofPoint pt);
+	ofRectangle DrawIcon(int idx, ofPoint pt);
 	Landmark GetRandomLandmark();
 	Landmark GetNthClosestLandmark(Landmark landmark, int n);
 
