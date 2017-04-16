@@ -31,6 +31,19 @@ float LatLon::LatLonNoise(float x, float y)
 	return Noise(x*gridNoiseScale, y*gridNoiseScale, 3, 0.5f, 0.4f);
 }
 
+void RoughTracePath(ofPolyline& path, float minSize, float maxSize)
+{
+	float len = 0;
+	while (path.getIndexAtLength(len) < path.size()-1) // apparently size - 1....
+	{
+		ofPoint pt = path.getPointAtLength(len);
+		
+		ofDrawCircle(pt, ofRandom(minSize, maxSize));
+
+		len += 1;
+	}
+}
+
 bool LatLon::Render()
 {
 	image.begin();
@@ -38,27 +51,23 @@ bool LatLon::Render()
 
 	for (int y = 0; y < ofGetHeight(); y += gridSpacing)
 	{
-		ofPath path = ofPath();
-		path.setMode(ofPath::Mode::POLYLINES);
-		path.setStrokeWidth(2);
-		path.setStrokeColor(ofColor(0, 0, 0, 255));
-		path.setFilled(false);
+		ofPolyline path = ofPolyline();
 		path.curveTo(ofPoint(0, y));
 		for (int x = -gridDetail; x < ofGetWidth() + gridDetail; x += gridDetail)
 		{
 			ofPoint offset(LatLonNoise(x, y), LatLonNoise(x, y + 1000.0f));
 			path.curveTo(offset * gridWobble + ofPoint(x, y));
 		}
-		path.draw(0, 0);
+
+		ofFill();
+		ofSetColor(ofColor::black);
+		ofEnableSmoothing();
+		RoughTracePath(path, 1, 2);
 	}
 
 	for (int x = 0; x < ofGetWidth(); x += gridSpacing)
 	{
-		ofPath path = ofPath();
-		path.setMode(ofPath::Mode::POLYLINES);
-		path.setStrokeWidth(2);
-		path.setStrokeColor(ofColor(0, 0, 0, 255));
-		path.setFilled(false);
+		ofPolyline path = ofPolyline();
 		path.curveTo(ofPoint(x, 0));
 		for (int y = -gridDetail; y < ofGetHeight() + gridDetail; y += gridDetail)
 		{
@@ -66,7 +75,11 @@ bool LatLon::Render()
 			path.curveTo(offset * gridWobble + ofPoint(x, y));
 		}
 		path.curveTo(ofPoint(x, ofGetHeight()));
-		path.draw(0, 0);
+
+		ofFill();
+		ofSetColor(ofColor::black);
+		ofEnableSmoothing();
+		RoughTracePath(path, 1, 2);
 	}
 
 	image.end();

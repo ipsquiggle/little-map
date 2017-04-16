@@ -295,7 +295,6 @@ bool CurveTerrain::DrawIsland(int x, int y)
 	{
 		ofPoint pt = path.getPointAtLength(len);
 		
-		//ofDrawCircle(pt, 3);
 		ofDrawCircle(pt, ofRandom(1.5f, 3.0f));
 
 		len += 1;

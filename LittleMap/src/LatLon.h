@@ -15,7 +15,6 @@ public:
 
 private:
 	float LatLonNoise(float x, float y);
-	ofColor LatLonColour(int x, int y);
 
 	ofFbo image;
 };
