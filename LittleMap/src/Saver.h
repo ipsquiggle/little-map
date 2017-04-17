@@ -12,6 +12,8 @@ public:
 	virtual bool Render();
 	virtual void Draw();
 
+	void Save(bool force);
+
 private:
 	bool saved;
 };

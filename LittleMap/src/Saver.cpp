@@ -2,7 +2,7 @@
 
 Saver::Saver()
 {
-	saved = false;
+	saved = true;
 }
 
 Saver::~Saver()
@@ -13,9 +13,9 @@ void Saver::Setup()
 {
 }
 
-bool Saver::Render()
+void Saver::Save(bool force)
 {
-	if (!saved)
+	if (!saved || force)
 	{
 		ofImage snapshot;
 		snapshot.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
@@ -29,10 +29,16 @@ bool Saver::Render()
 
 		saved = true;
 	}
+}
+
+bool Saver::Render()
+{
+	saved = false;
 
 	return true;
 }
 
 void Saver::Draw()
 {
+	Save(false);
 }

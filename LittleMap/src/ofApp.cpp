@@ -321,6 +321,6 @@ void ofApp::exit()
 {
 	if (stages[(int)save] != nullptr)
 	{
-		stages[(int)save]->Render();
+		((Saver*)stages[(int)save])->Save(true);
 	}
 }
