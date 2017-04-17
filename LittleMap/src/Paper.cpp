@@ -28,6 +28,9 @@ void Paper::Reset()
 	if (image.isAllocated())
 		image.clear();
 	image.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+	image.begin();
+	ofClear(0, 0, 0, 0);
+	image.end();
 }
 
 float Paper::PaperNoise(float x, float y)
@@ -98,5 +101,6 @@ bool Paper::Render()
 
 void Paper::Draw()
 {
-	image.draw(0, 0);
+	if(image.isAllocated())
+		image.draw(0, 0);
 }

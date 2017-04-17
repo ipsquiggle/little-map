@@ -10,9 +10,6 @@
     <ClCompile Include="src\Stage.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Terrain.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\LatLon.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -54,9 +51,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ofApp.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Terrain.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Noise.h">

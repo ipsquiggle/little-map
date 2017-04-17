@@ -54,7 +54,7 @@ void ofApp::setup()
 	Paths *paths = new Paths(*terrain, *landmarks, 0);
 	stages[(int)step::paths] = paths;
 
-	Legend *legend = new Legend(*landmarks);
+	Legend *legend = new Legend(*landmarks, *paths);
 	stages[(int)step::legend] = legend;
 
 	Paper *paper = new Paper(*legend);

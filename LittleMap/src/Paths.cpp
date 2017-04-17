@@ -10,8 +10,8 @@ float shoreline = 0.0f;
 float dotSize = 3;
 float dotSpacing = 10.0f;
 float dashSize = 2;
-float dashLength = 10.0f;
-float dashSpacing = 15.0f;
+float dashLength = 7.0f;
+float dashSpacing = 10.0f;
 float dibbleSize = 2;
 float dibbleSpacing = 5.0f;
 float noDrawSpacingSq = 4.0f*4.0f;
@@ -48,10 +48,16 @@ void Paths::Reset()
 	if (image.isAllocated())
 		image.clear();
 	image.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+	image.begin();
+	ofClear(0, 0, 0, 0);
+	image.end();
 
 	if (debugImage.isAllocated())
 		debugImage.clear();
 	debugImage.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+	debugImage.begin();
+	ofClear(0, 0, 0, 0);
+	debugImage.end();
 
 	paths.clear();
 	drawnPaths.clear();
@@ -406,9 +412,11 @@ void Paths::Draw()
 {
 	if (debugNum > 0)
 	{
-		debugImage.draw(0, 0);
+		if(debugImage.isAllocated())
+			debugImage.draw(0, 0);
 	}
-	image.draw(0, 0);
+	if(image.isAllocated())
+		image.draw(0, 0);
 }
 
 void Paths::DebugNum(int key)

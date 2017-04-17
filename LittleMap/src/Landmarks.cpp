@@ -49,6 +49,9 @@ void Landmarks::Reset()
 	if (image.isAllocated())
 		image.clear();
 	image.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+	image.begin();
+	ofClear(0, 0, 0, 0);
+	image.end();
 }
 
 bool Landmarks::Render()
@@ -135,7 +138,8 @@ ofRectangle Landmarks::DrawIcon(int idx, ofPoint pt)
 
 void Landmarks::Draw()
 {
-	image.draw(0, 0);
+	if(image.isAllocated())
+		image.draw(0, 0);
 }
 
 const vector<Landmarks::Landmark> Landmarks::GetLandmarks()

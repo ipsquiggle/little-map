@@ -56,6 +56,9 @@ void CurveTerrain::Reset()
 	if (image.isAllocated())
 		image.clear();
 	image.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+	image.begin();
+	ofClear(0, 0, 0, 0);
+	image.end();
 }
 
 void CurveTerrain::RenderNoiseMap()
@@ -418,7 +421,8 @@ bool CurveTerrain::Render()
 
 void CurveTerrain::Draw()
 {
-	image.draw(0, 0);
+	if(image.isAllocated())
+		image.draw(0, 0);
 }
 
 void CurveTerrain::SetupTiles()
