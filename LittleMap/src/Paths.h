@@ -21,8 +21,6 @@ public:
 	virtual void DebugClick(int x, int y);
 	virtual char* GetMessage();
 
-	void GetCosts(ofPoint pos, float& valCost, float& distCost, float& totalCost, float& shoreCost);
-
 	struct pathBit
 	{
 		float cost;
@@ -61,6 +59,9 @@ public:
 		PathStyle style;
 		progress progress;
 	};
+
+	void GetCosts(ofPoint pos, float& valCost, float& distCost, float& totalCost, float& shoreCost);
+	void DrawRoute(ofPolyline stroke, PathStyle style, bool testOverlap);
 
 private:
 	int debugNum;

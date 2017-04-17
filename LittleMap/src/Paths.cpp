@@ -57,12 +57,70 @@ void Paths::Reset()
 	drawnPaths.clear();
 }
 
+void Paths::DrawRoute(ofPolyline stroke, Paths::PathStyle style, bool testOverlap)
+{
+	float len = 0;
+	while (stroke.getIndexAtLength(len) < stroke.size()-1) // apparently size - 1....
+	{
+		ofPoint pt = stroke.getPointAtLength(len);
+		bool blocked = false;
+		if (testOverlap)
+		{
+			for (auto otherLine : drawnPaths)
+			{
+				ofPoint otherPt = otherLine.getClosestPoint(pt);
+				if (pt.distanceSquared(otherPt) < noDrawSpacingSq)
+				{
+					blocked = true;
+					break;
+				}
+			}
+		}
+		
+		if (!blocked)
+		{
+			if (style == PathStyle::Below)
+			{
+				ofSetColor(0, 0, 0, 150);
+				ofDrawCircle(pt, dotSize);
+			}
+			else if (style == PathStyle::Above)
+			{
+				ofSetColor(ofColor::black);
+				ofDrawCircle(pt, dibbleSize);
+			}
+			else if (style == PathStyle::Mixed)
+			{
+				if (terrain.GetLandValue(pt.x, pt.y) > 0)
+					ofSetColor(ofColor::black);
+				else
+					ofSetColor(0, 0, 0, 150);
+				ofDrawCircle(pt, dashSize);
+			}
+		}
+		if (style == PathStyle::Below)
+		{
+			len += dotSpacing;
+		}
+		else if (style == PathStyle::Above)
+		{
+			len += dibbleSpacing;
+		}
+		else if (style == PathStyle::Mixed)
+		{
+			float phase = std::fmodf(len, (dashLength + dashSpacing));
+			if (phase < dashLength)
+				len += 3;
+			else
+				len += dashSpacing;
+		}
+	}
+
+}
+
 void Paths::TracePath(Path& path)
 {
 	ofPolyline stroke = ofPolyline();
-	//stroke.setStrokeWidth(2);
-	//stroke.setFilled(false);
-	//stroke.setStrokeColor(ofColor::black);
 
 	stroke.curveTo(path.progress.visited[path.progress.currentIndex].pos);
 	stroke.curveTo(path.progress.visited[path.progress.currentIndex].pos);
@@ -79,64 +137,10 @@ void Paths::TracePath(Path& path)
 
 	stroke = stroke.getSmoothed(30, 1);
 
-	//stroke.draw(0, 0);
-
 	ofFill();
 	ofEnableSmoothing();
 
-	float len = 0;
-	while (stroke.getIndexAtLength(len) < stroke.size()-1) // apparently size - 1....
-	{
-		ofPoint pt = stroke.getPointAtLength(len);
-		bool blocked = false;
-		for (auto otherLine : drawnPaths)
-		{
-			ofPoint otherPt = otherLine.getClosestPoint(pt);
-			if (pt.distanceSquared(otherPt) < noDrawSpacingSq)
-			{
-				blocked = true;
-				break;
-			}
-		}
-		
-		if (!blocked)
-		{
-			if (path.style == PathStyle::Below)
-			{
-				ofSetColor(0, 0, 0, 150);
-				ofDrawCircle(pt, dotSize);
-			}
-			else if (path.style == PathStyle::Above)
-			{
-				ofSetColor(ofColor::black);
-				ofDrawCircle(pt, dibbleSize);
-			}
-			else if (path.style == PathStyle::Mixed)
-			{
-				if (terrain.GetLandValue(pt.x, pt.y) > 0)
-					ofSetColor(ofColor::black);
-				else
-					ofSetColor(0, 0, 0, 150);
-				ofDrawCircle(pt, dashSize);
-			}
-		}
-		if (path.style == PathStyle::Below)
-		{
-			len += dotSpacing;
-		}
-		else if (path.style == PathStyle::Above)
-		{
-			len += dibbleSpacing;
-		}
-		else if (path.style == PathStyle::Mixed)
-		{
-			float phase = std::fmodf(len, (dashLength + dashSpacing));
-			if (phase < dashLength)
-				len += 3;
-			else
-				len += dashSpacing;
-		}
-	}
+	DrawRoute(stroke, path.style, true);
 
 	drawnPaths.push_back(stroke);
 
