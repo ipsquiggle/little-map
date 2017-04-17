@@ -48,10 +48,17 @@ public:
 		int length;
 		bool traced;
 	};
-	
+
+	enum PathStyle {
+		Below,
+		Above,
+		Mixed,
+	};
+
 	struct Path {
 		ofPoint start;
 		ofPoint end;
+		PathStyle style;
 		progress progress;
 	};
 

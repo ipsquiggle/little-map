@@ -7,7 +7,13 @@ int minNearest = 1;
 int maxNearest = 17;
 float pathSegDist = 10.0f;
 float shoreline = 0.0f;
+float dotSize = 3;
 float dotSpacing = 10.0f;
+float dashSize = 2;
+float dashLength = 10.0f;
+float dashSpacing = 15.0f;
+float dibbleSize = 2;
+float dibbleSpacing = 5.0f;
 float noDrawSpacingSq = 4.0f*4.0f;
 
 Paths::Paths(CurveTerrain &terrain, Landmarks &landmarks, int debugNum)
@@ -77,7 +83,7 @@ void Paths::TracePath(Path& path)
 
 	ofFill();
 	ofEnableSmoothing();
-	ofSetColor(ofColor::black);
+
 	float len = 0;
 	while (stroke.getIndexAtLength(len) < stroke.size()-1) // apparently size - 1....
 	{
@@ -95,9 +101,41 @@ void Paths::TracePath(Path& path)
 		
 		if (!blocked)
 		{
-			ofDrawCircle(pt, 3);
+			if (path.style == PathStyle::Below)
+			{
+				ofSetColor(0, 0, 0, 150);
+				ofDrawCircle(pt, dotSize);
+			}
+			else if (path.style == PathStyle::Above)
+			{
+				ofSetColor(ofColor::black);
+				ofDrawCircle(pt, dibbleSize);
+			}
+			else if (path.style == PathStyle::Mixed)
+			{
+				if (terrain.GetLandValue(pt.x, pt.y) > 0)
+					ofSetColor(ofColor::black);
+				else
+					ofSetColor(0, 0, 0, 150);
+				ofDrawCircle(pt, dashSize);
+			}
 		}
-		len += dotSpacing;
+		if (path.style == PathStyle::Below)
+		{
+			len += dotSpacing;
+		}
+		else if (path.style == PathStyle::Above)
+		{
+			len += dibbleSpacing;
+		}
+		else if (path.style == PathStyle::Mixed)
+		{
+			float phase = std::fmodf(len, (dashLength + dashSpacing));
+			if (phase < dashLength)
+				len += 3;
+			else
+				len += dashSpacing;
+		}
 	}
 
 	drawnPaths.push_back(stroke);
@@ -300,7 +338,17 @@ bool Paths::Render()
 				i--;
 				continue;
 			}
-			Path p = { start.pos, end.pos };
+			bool startLand = terrain.GetLandValue(start.pos.x, start.pos.y) > 0;
+			bool endLand = terrain.GetLandValue(end.pos.x, end.pos.y) > 0;
+			PathStyle style;
+			if (!startLand && !endLand)
+				style = PathStyle::Below;
+			else if (startLand != endLand)
+				style = PathStyle::Mixed;
+			else
+				style = ofRandom(0.0f, 1.0f) < 0.5f ? PathStyle::Above : PathStyle::Below;
+
+			Path p = { start.pos, end.pos, style };
 			paths.push_back(p);
 		}
 

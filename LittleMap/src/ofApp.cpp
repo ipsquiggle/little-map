@@ -197,28 +197,58 @@ void ofApp::keyPressed(int key)
 	}
 	else if (key == 'a')
 	{
-		autoAdvance = true;
+		autoAdvance = !autoAdvance;
 	}
 	else if (key == ')')
+	{
 		targetStep = 0;
+		autoAdvance = false;
+	}
 	else if (key == '!')
+	{
 		targetStep = 1;
+		autoAdvance = false;
+	}
 	else if (key == '@')
+	{
 		targetStep = 2;
+		autoAdvance = false;
+	}
 	else if (key == '#')
+	{
 		targetStep = 3;
+		autoAdvance = false;
+	}
 	else if (key == '$')
+	{
 		targetStep = 4;
+		autoAdvance = false;
+	}
 	else if (key == '%')
+	{
 		targetStep = 5;
+		autoAdvance = false;
+	}
 	else if (key == '^')
+	{
 		targetStep = 6;
+		autoAdvance = false;
+	}
 	else if (key == '&')
+	{
 		targetStep = 7;
+		autoAdvance = false;
+	}
 	else if (key == '*')
+	{
 		targetStep = 8;
+		autoAdvance = false;
+	}
 	else if (key == '(')
+	{
 		targetStep = 9;
+		autoAdvance = false;
+	}
 
 	bool reset = false;
 	for (int i = currentStep; i >= targetStep; i--)
@@ -229,7 +259,6 @@ void ofApp::keyPressed(int key)
 	}
 	if (reset)
 	{
-		autoAdvance = false;
 		currentStep = (step)(targetStep-1);
 		Advance();
 	}
